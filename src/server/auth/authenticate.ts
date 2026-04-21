@@ -1,0 +1,65 @@
+import { BillingStatus } from "@prisma/client";
+import { z } from "zod";
+
+import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/server/auth/password";
+import { isBillingActive } from "@/server/billing/status";
+import { loginSchema } from "@/server/schemas/auth";
+
+type LoginInput = z.infer<typeof loginSchema>;
+
+export async function authenticateCredentials(input: LoginInput) {
+  const user = await prisma.user.findUnique({
+    where: { email: input.email },
+    include: {
+      tenant: {
+        select: {
+          billingStatus: true,
+          subscriptionCurrentPeriodEnd: true
+        }
+      }
+    }
+  });
+
+  if (!user) {
+    return { status: "invalid" as const };
+  }
+
+  const passwordMatches = await verifyPassword(input.password, user.passwordHash);
+
+  if (!passwordMatches) {
+    return { status: "invalid" as const };
+  }
+
+  if (!isBillingActive(user.tenant.billingStatus, user.tenant.subscriptionCurrentPeriodEnd)) {
+    return {
+      status: "inactive" as const,
+      billingStatus: user.tenant.billingStatus,
+      subscriptionCurrentPeriodEnd: user.tenant.subscriptionCurrentPeriodEnd
+    };
+  }
+
+  return {
+    status: "success" as const,
+    user
+  };
+}
+
+export function getInactiveBillingMessage(
+  status: BillingStatus,
+  subscriptionCurrentPeriodEnd?: Date | null
+) {
+  if (status === BillingStatus.ACTIVE) {
+    return "Sua assinatura venceu. Regularize a cobrança para voltar ao painel.";
+  }
+
+  if (status === BillingStatus.PAST_DUE) {
+    return "Sua assinatura está com pagamento pendente. Regularize a cobrança para voltar ao painel.";
+  }
+
+  if (status === BillingStatus.CANCELED) {
+    return "Sua assinatura foi cancelada. Reative o plano para acessar o painel.";
+  }
+
+  return "Sua conta ainda não foi ativada. Conclua o pagamento para liberar o acesso.";
+}
