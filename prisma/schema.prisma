@@ -14,7 +14,12 @@ model Tenant {
   billingStatus                BillingStatus       @default(PENDING_PAYMENT)
   billingCustomerId            String?             @unique
   billingSubscriptionId        String?             @unique
+  subscriptionStartDate        DateTime?
   subscriptionCurrentPeriodEnd DateTime?
+  gracePeriodDays              Int                 @default(0)
+  isBlocked                    Boolean             @default(false)
+  blockedAt                    DateTime?
+  blockedReason                String?
   createdAt                    DateTime            @default(now())
   profile                      BarbershopProfile?
   users                        User[]
@@ -23,6 +28,7 @@ model Tenant {
   appointments                 Appointment[]
   businessHours                BusinessHour[]
   pendingSignups               PendingSignup[]
+  activityLogs                 TenantActivityLog[]
 }
 
 model User {
@@ -31,11 +37,28 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role     @default(ADMIN)
-  tenantId     String
-  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId     String?
+  isBlocked    Boolean  @default(false)
+  blockedAt    DateTime?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
+  auditLogs    TenantActivityLog[] @relation("TenantActivityActor")
 
   @@index([tenantId])
+}
+
+model TenantActivityLog {
+  id          String   @id @default(cuid())
+  tenantId     String
+  actorUserId  String?
+  action       String
+  description  String
+  createdAt    DateTime @default(now())
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actorUser    User?    @relation("TenantActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([actorUserId])
 }
 
 model BarbershopProfile {
@@ -128,6 +151,7 @@ model PendingSignup {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   STAFF
   CUSTOMER

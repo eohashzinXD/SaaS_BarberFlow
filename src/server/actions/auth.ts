@@ -4,7 +4,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { buildRedirectUrl } from "@/lib/navigation";
-import { authenticateCredentials, getInactiveBillingMessage } from "@/server/auth/authenticate";
+import { authenticateCredentials } from "@/server/auth/authenticate";
 import { createPendingSignupCheckout, ensureSignupEligibility } from "@/server/billing";
 import { loginSchema, registerSchema } from "@/server/schemas/auth";
 import { signIn, signOut } from "../../../auth";
@@ -30,13 +30,13 @@ export async function loginAction(formData: FormData) {
     password: getString(formData, "password")
   });
 
-  const callbackUrl = getString(formData, "callbackUrl") || "/dashboard";
+  const callbackUrl = getString(formData, "callbackUrl");
 
   if (!parsed.success) {
     redirect(
       buildRedirectUrl("/login", {
         error: parsed.error.issues[0]?.message ?? "Não foi possível entrar.",
-        callbackUrl
+        callbackUrl: callbackUrl || undefined
       })
     );
   }
@@ -46,27 +46,30 @@ export async function loginAction(formData: FormData) {
   if (authAttempt.status === "inactive") {
     redirect(
       buildRedirectUrl("/login", {
-        error: getInactiveBillingMessage(
-          authAttempt.billingStatus,
-          authAttempt.subscriptionCurrentPeriodEnd
-        ),
-        callbackUrl
+        error: authAttempt.message,
+        callbackUrl: callbackUrl || undefined
       })
     );
   }
+
+  const redirectTo = callbackUrl || (
+    authAttempt.status === "success" && authAttempt.user.role === "SUPER_ADMIN"
+      ? "/super-admin"
+      : "/dashboard"
+  );
 
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: callbackUrl
+      redirectTo
     });
   } catch (error) {
     if (error instanceof AuthError) {
       redirect(
         buildRedirectUrl("/login", {
           error: "E-mail ou senha inválidos.",
-          callbackUrl
+          callbackUrl: redirectTo
         })
       );
     }

@@ -4,7 +4,7 @@ import { FlashMessage } from "@/components/flash-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getFlashFromSearchParams } from "@/lib/navigation";
-import { getBillingStatusLabel } from "@/server/billing/status";
+import { getBillingStatusLabel, getTenantAccessMessage } from "@/server/billing/status";
 import { openBillingPortalAction } from "@/server/actions/billing";
 import { requireAnyTenantSession } from "@/server/auth/tenant-session";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +22,10 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
     select: {
       name: true,
       billingStatus: true,
-      subscriptionCurrentPeriodEnd: true
+      subscriptionCurrentPeriodEnd: true,
+      gracePeriodDays: true,
+      isBlocked: true,
+      blockedReason: true
     }
   });
 
@@ -30,40 +33,52 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
     notFound();
   }
 
+  const accessMessage = session.isBlocked
+    ? "Seu usuário está bloqueado. Fale com o responsável da plataforma."
+    : getTenantAccessMessage(tenant);
+  const canOpenBilling = !session.isBlocked && !tenant.isBlocked;
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl items-center px-6 py-16">
       <div className="w-full space-y-6">
         {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
-        <FlashMessage
-          message="O acesso ao painel está bloqueado até a assinatura ficar ativa novamente."
-          type="error"
-        />
+        <FlashMessage message={accessMessage} type="error" />
         <Card>
           <CardHeader>
-            <CardTitle>Acesso bloqueado por billing</CardTitle>
+            <CardTitle>{tenant.isBlocked ? "Acesso bloqueado" : "Acesso bloqueado por billing"}</CardTitle>
             <CardDescription>
               A barbearia {tenant.name} está com o status{" "}
               {getBillingStatusLabel(
                 tenant.billingStatus,
-                tenant.subscriptionCurrentPeriodEnd
+                tenant.subscriptionCurrentPeriodEnd,
+                tenant.gracePeriodDays
               ).toLowerCase()}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Gere um novo checkout para regularizar a assinatura e liberar o painel novamente.
-            </p>
+            <p className="text-sm text-muted-foreground">{accessMessage}</p>
+            {tenant.blockedReason ? (
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Motivo informado:</strong> {tenant.blockedReason}
+              </p>
+            ) : null}
             {tenant.subscriptionCurrentPeriodEnd ? (
               <p className="text-sm text-muted-foreground">
                 Último vencimento registrado:{" "}
                 {tenant.subscriptionCurrentPeriodEnd.toLocaleDateString("pt-BR")}
               </p>
             ) : null}
-            <form action={openBillingPortalAction}>
-              <SubmitButton pendingLabel="Redirecionando para pagamento..." type="submit">
-                Ir para pagamento
-              </SubmitButton>
-            </form>
+            {canOpenBilling ? (
+              <form action={openBillingPortalAction}>
+                <SubmitButton pendingLabel="Redirecionando para pagamento..." type="submit">
+                  Ir para pagamento
+                </SubmitButton>
+              </form>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Este bloqueio precisa ser liberado por um Super Admin da plataforma.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

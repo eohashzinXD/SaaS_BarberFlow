@@ -118,11 +118,13 @@ async function updateTenantBilling(params: {
   billingStatus: BillingStatus;
   customerId?: string | null;
   subscriptionId?: string | null;
+  subscriptionStartDate?: Date | null;
   subscriptionCurrentPeriodEnd?: Date | null;
   tenantId?: string;
 }) {
   const data = {
     billingStatus: params.billingStatus,
+    subscriptionStartDate: params.subscriptionStartDate,
     subscriptionCurrentPeriodEnd: params.subscriptionCurrentPeriodEnd ?? null,
     ...(params.customerId ? { billingCustomerId: params.customerId } : {}),
     ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {})
@@ -338,13 +340,14 @@ export async function provisionPaidSignupFromSubscription(
       select: { tenantId: true }
     });
 
-    if (existingUser) {
+    if (existingUser?.tenantId) {
       await tx.tenant.update({
         where: { id: existingUser.tenantId },
         data: {
           billingStatus: BillingStatus.ACTIVE,
           billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
           billingSubscriptionId: payload.subscription.id,
+          subscriptionStartDate: new Date(),
           subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd()
         }
       });
@@ -369,6 +372,7 @@ export async function provisionPaidSignupFromSubscription(
         billingStatus: BillingStatus.ACTIVE,
         billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
         billingSubscriptionId: payload.subscription.id,
+        subscriptionStartDate: new Date(),
         subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd()
       }
     });

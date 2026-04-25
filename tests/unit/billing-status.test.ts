@@ -3,8 +3,10 @@ import { BillingStatus } from "@prisma/client";
 import {
   getBillingStatusLabel,
   getNextSubscriptionPeriodEnd,
+  getTenantPlatformStatus,
   hasBillingPeriodEnded,
-  isBillingActive
+  isBillingActive,
+  isTenantAccessAllowed
 } from "@/server/billing/status";
 
 describe("billing status rules", () => {
@@ -30,5 +32,23 @@ describe("billing status rules", () => {
   it("blocks access when there is no current period end recorded", () => {
     expect(isBillingActive(BillingStatus.ACTIVE, null)).toBe(false);
     expect(getBillingStatusLabel(BillingStatus.ACTIVE, null)).toBe("Assinatura vencida");
+  });
+
+  it("marks tenants as blocked when there is a manual lock", () => {
+    expect(
+      isTenantAccessAllowed({
+        billingStatus: BillingStatus.ACTIVE,
+        subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd(new Date()),
+        isBlocked: true
+      })
+    ).toBe(false);
+
+    expect(
+      getTenantPlatformStatus({
+        billingStatus: BillingStatus.ACTIVE,
+        subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd(new Date()),
+        isBlocked: true
+      })
+    ).toBe("BLOCKED");
   });
 });

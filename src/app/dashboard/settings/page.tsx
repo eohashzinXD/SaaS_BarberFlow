@@ -27,7 +27,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const session = await requireTenantSession();
   const tenant = await getTenantSettings(session.tenantId);
   const billingIsActive = tenant
-    ? isBillingActive(tenant.billingStatus, tenant.subscriptionCurrentPeriodEnd)
+    ? isBillingActive(
+        tenant.billingStatus,
+        tenant.subscriptionCurrentPeriodEnd,
+        tenant.gracePeriodDays
+      )
     : false;
 
   return (
@@ -89,7 +93,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               <strong className="text-foreground">Status atual:</strong>{" "}
               {getBillingStatusLabel(
                 tenant?.billingStatus ?? BillingStatus.PENDING_PAYMENT,
-                tenant?.subscriptionCurrentPeriodEnd
+                tenant?.subscriptionCurrentPeriodEnd,
+                tenant?.gracePeriodDays ?? 0
               )}
             </p>
             {tenant?.subscriptionCurrentPeriodEnd ? (

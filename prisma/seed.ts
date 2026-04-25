@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   const passwordHash = await bcrypt.hash("admin123456", 10);
+  const superAdminPasswordHash = await bcrypt.hash("superadmin123", 10);
+  const subscriptionStartDate = new Date();
   const subscriptionCurrentPeriodEnd = addMonths(new Date(), 1);
 
   const tenant = await prisma.tenant.upsert({
@@ -13,12 +15,14 @@ async function main() {
     update: {
       name: "Barbearia Demo",
       billingStatus: BillingStatus.ACTIVE,
+      subscriptionStartDate,
       subscriptionCurrentPeriodEnd
     },
     create: {
       name: "Barbearia Demo",
       slug: "barbearia-demo",
       billingStatus: BillingStatus.ACTIVE,
+      subscriptionStartDate,
       subscriptionCurrentPeriodEnd,
       profile: {
         create: {
@@ -45,6 +49,25 @@ async function main() {
       passwordHash,
       tenantId: tenant.id,
       role: Role.ADMIN
+    }
+  });
+
+  await prisma.user.upsert({
+    where: { email: "superadmin@barbersaas.com" },
+    update: {
+      name: "Super Admin",
+      passwordHash: superAdminPasswordHash,
+      tenantId: null,
+      role: Role.SUPER_ADMIN,
+      isBlocked: false,
+      blockedAt: null
+    },
+    create: {
+      name: "Super Admin",
+      email: "superadmin@barbersaas.com",
+      passwordHash: superAdminPasswordHash,
+      tenantId: null,
+      role: Role.SUPER_ADMIN
     }
   });
 

@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const callbackUrl =
     typeof params.callbackUrl === "string" && params.callbackUrl.startsWith("/")
       ? params.callbackUrl
-      : "/dashboard";
+      : "";
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md items-center px-6 py-16">

@@ -33,7 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           emailVerified: null,
           role: result.user.role,
           tenantId: result.user.tenantId,
-          billingStatus: result.user.tenant.billingStatus
+          billingStatus: result.user.tenant?.billingStatus ?? null,
+          isBlocked: result.user.isBlocked
         };
       }
     })

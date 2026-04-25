@@ -15,6 +15,10 @@ export function formatDateTime(date: Date) {
   return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 }
 
+export function formatDate(date: Date) {
+  return format(date, "dd/MM/yyyy", { locale: ptBR });
+}
+
 export function formatDateInput(date: Date) {
   return format(date, "yyyy-MM-dd");
 }

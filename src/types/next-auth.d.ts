@@ -9,9 +9,10 @@ declare module "next-auth" {
       name: string;
       email: string;
       emailVerified: Date | null;
-      tenantId: string;
+      tenantId: string | null;
       role: Role;
-      billingStatus: BillingStatus;
+      billingStatus: BillingStatus | null;
+      isBlocked: boolean;
     };
   }
 
@@ -20,9 +21,10 @@ declare module "next-auth" {
     name: string;
     email: string;
     emailVerified: Date | null;
-    tenantId: string;
+    tenantId: string | null;
     role: Role;
-    billingStatus: BillingStatus;
+    billingStatus: BillingStatus | null;
+    isBlocked: boolean;
   }
 }
 
@@ -30,9 +32,10 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     email: string;
-    tenantId: string;
+    tenantId: string | null;
     role: Role;
     name: string;
-    billingStatus: BillingStatus;
+    billingStatus: BillingStatus | null;
+    isBlocked: boolean;
   }
 }

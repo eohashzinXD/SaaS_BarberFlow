@@ -10,6 +10,7 @@ type RegisterTenantAccountInput = z.infer<typeof registerSchema>;
 
 export async function registerTenantAccount(input: RegisterTenantAccountInput) {
   const passwordHash = await hashPassword(input.password);
+  const subscriptionStartDate = new Date();
   const subscriptionCurrentPeriodEnd = addMonths(new Date(), 1);
 
   return prisma.$transaction(async (tx) => {
@@ -18,6 +19,7 @@ export async function registerTenantAccount(input: RegisterTenantAccountInput) {
         name: input.barbershopName,
         slug: input.slug,
         billingStatus: BillingStatus.ACTIVE,
+        subscriptionStartDate,
         subscriptionCurrentPeriodEnd
       }
     });

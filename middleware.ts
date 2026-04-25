@@ -9,7 +9,8 @@ const { auth } = NextAuth(authConfig);
 export default auth((request) => {
   const resolution = resolveAccess({
     pathname: request.nextUrl.pathname,
-    hasSession: Boolean(request.auth?.user)
+    hasSession: Boolean(request.auth?.user),
+    role: request.auth?.user?.role
   });
 
   if (resolution === "login") {
@@ -25,9 +26,13 @@ export default auth((request) => {
     return NextResponse.redirect(new URL("/dashboard", request.nextUrl.origin));
   }
 
+  if (resolution === "super-admin") {
+    return NextResponse.redirect(new URL("/super-admin", request.nextUrl.origin));
+  }
+
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/billing/:path*", "/login", "/register"]
+  matcher: ["/dashboard/:path*", "/billing/:path*", "/super-admin/:path*", "/login", "/register"]
 };

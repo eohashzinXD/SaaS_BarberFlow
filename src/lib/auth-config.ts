@@ -16,9 +16,10 @@ export const authConfig = {
         token.id = user.id;
         token.name = user.name ?? "";
         token.email = user.email ?? "";
-        token.tenantId = user.tenantId;
+        token.tenantId = user.tenantId ?? null;
         token.role = user.role;
-        token.billingStatus = user.billingStatus;
+        token.billingStatus = user.billingStatus ?? null;
+        token.isBlocked = user.isBlocked;
       }
 
       return token;
@@ -31,7 +32,8 @@ export const authConfig = {
         emailVerified: null,
         tenantId: token.tenantId,
         role: token.role as Role,
-        billingStatus: token.billingStatus as BillingStatus
+        billingStatus: (token.billingStatus as BillingStatus | null) ?? null,
+        isBlocked: Boolean(token.isBlocked)
       };
 
       return session;
