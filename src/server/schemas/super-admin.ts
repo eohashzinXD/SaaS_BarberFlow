@@ -57,7 +57,14 @@ export const userUpdateSchema = z.object({
   userId: z.string().min(1),
   name: z.string().trim().min(3, "Informe o nome do usuário."),
   email: z.email("Informe um e-mail válido."),
-  role: z.nativeEnum(Role)
+  password: z
+    .string()
+    .min(8, "A senha deve ter pelo menos 8 caracteres.")
+    .max(72, "A senha é muito longa.")
+    .optional(),
+  role: z.nativeEnum(Role),
+  tenantId: z.string().trim().optional(),
+  isBlocked: z.boolean()
 });
 
 export const userToggleBlockSchema = z.object({

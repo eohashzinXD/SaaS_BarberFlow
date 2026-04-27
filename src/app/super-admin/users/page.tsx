@@ -21,24 +21,17 @@ type SuperAdminUsersPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function getRoleOptions(role: Role) {
-  if (role === Role.SUPER_ADMIN) {
-    return [{ value: Role.SUPER_ADMIN, label: "SUPER_ADMIN" }];
-  }
-
-  return [
-    { value: Role.ADMIN, label: "ADMIN" },
-    { value: Role.STAFF, label: "STAFF" },
-    { value: Role.CUSTOMER, label: "CUSTOMER" }
-  ];
-}
+const roleOptions = Object.values(Role).map((role) => ({
+  value: role,
+  label: role
+}));
 
 export default async function SuperAdminUsersPage({
   searchParams
 }: SuperAdminUsersPageProps) {
   const params = await searchParams;
   const flash = getFlashFromSearchParams(params);
-  const { filters, users } = await listSuperAdminUsers(params);
+  const { filters, tenants, users } = await listSuperAdminUsers(params);
   const currentPath = `/super-admin/users${filters.query ? `?${new URLSearchParams({ query: filters.query }).toString()}` : ""}`;
 
   return (
@@ -150,6 +143,17 @@ export default async function SuperAdminUsersPage({
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor={`password-${user.id}`}>Nova senha</Label>
+                  <Input
+                    autoComplete="new-password"
+                    id={`password-${user.id}`}
+                    minLength={8}
+                    name="password"
+                    placeholder="Deixe vazio para manter"
+                    type="password"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor={`role-${user.id}`}>Role</Label>
                   <select
                     className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -157,12 +161,43 @@ export default async function SuperAdminUsersPage({
                     id={`role-${user.id}`}
                     name="role"
                   >
-                    {getRoleOptions(user.role).map((option) => (
+                    {roleOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="space-y-2 xl:col-span-2">
+                  <Label htmlFor={`tenant-${user.id}`}>Barbearia vinculada</Label>
+                  <select
+                    className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    defaultValue={user.tenantId ?? ""}
+                    id={`tenant-${user.id}`}
+                    name="tenantId"
+                  >
+                    <option value="">Conta interna da plataforma</option>
+                    {tenants.map((tenant) => (
+                      <option key={tenant.id} value={tenant.id}>
+                        {tenant.name} /{tenant.slug}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Contas SUPER_ADMIN ficam sem barbearia vinculada.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+                  <input
+                    className="h-4 w-4 rounded border-border"
+                    defaultChecked={user.isBlocked}
+                    id={`isBlocked-${user.id}`}
+                    name="isBlocked"
+                    type="checkbox"
+                  />
+                  <Label className="text-sm font-medium" htmlFor={`isBlocked-${user.id}`}>
+                    Usuário bloqueado
+                  </Label>
                 </div>
                 <div className="flex items-end">
                   <Button type="submit">Salvar</Button>

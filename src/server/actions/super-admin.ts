@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { buildRedirectUrl } from "@/lib/navigation";
 import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/server/auth/password";
 import { requireSuperAdminSession } from "@/server/auth/tenant-session";
 import {
   tenantBlockSchema,
@@ -339,14 +340,17 @@ export async function updateSuperAdminUserAction(formData: FormData) {
     userId: getString(formData, "userId"),
     name: getString(formData, "name"),
     email: getString(formData, "email").toLowerCase(),
-    role: getString(formData, "role")
+    password: getOptionalString(formData, "password"),
+    role: getString(formData, "role"),
+    tenantId: getOptionalString(formData, "tenantId"),
+    isBlocked: formData.get("isBlocked") === "on"
   });
 
   if (!parsed.success) {
     redirect(buildRedirectUrl(redirectTo, { error: parsed.error.issues[0]?.message }));
   }
 
-  const [user, emailConflict] = await Promise.all([
+  const [user, emailConflict, tenant] = await Promise.all([
     prisma.user.findUnique({
       where: { id: parsed.data.userId },
       select: {
@@ -354,7 +358,8 @@ export async function updateSuperAdminUserAction(formData: FormData) {
         name: true,
         email: true,
         role: true,
-        tenantId: true
+        tenantId: true,
+        isBlocked: true
       }
     }),
     prisma.user.findFirst({
@@ -365,7 +370,13 @@ export async function updateSuperAdminUserAction(formData: FormData) {
         }
       },
       select: { id: true }
-    })
+    }),
+    parsed.data.tenantId
+      ? prisma.tenant.findUnique({
+          where: { id: parsed.data.tenantId },
+          select: { id: true }
+        })
+      : Promise.resolve(null)
   ]);
 
   if (!user) {
@@ -380,13 +391,20 @@ export async function updateSuperAdminUserAction(formData: FormData) {
     redirect(buildRedirectUrl(redirectTo, { error: "Você não pode remover seu próprio acesso de Super Admin." }));
   }
 
-  if (user.role === Role.SUPER_ADMIN && parsed.data.role !== Role.SUPER_ADMIN) {
-    redirect(buildRedirectUrl(redirectTo, { error: "Altere o papel de Super Admin diretamente pelo processo operacional da plataforma." }));
+  if (session.id === user.id && parsed.data.isBlocked) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Você não pode bloquear o próprio usuário." }));
   }
 
-  if (user.role !== Role.SUPER_ADMIN && parsed.data.role === Role.SUPER_ADMIN) {
-    redirect(buildRedirectUrl(redirectTo, { error: "Promoção para Super Admin não está disponível por esta tela." }));
+  if (parsed.data.tenantId && !tenant) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Tenant informado não foi encontrado." }));
   }
+
+  if (parsed.data.role !== Role.SUPER_ADMIN && !parsed.data.tenantId) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Usuários comuns precisam estar vinculados a uma barbearia." }));
+  }
+
+  const nextTenantId = parsed.data.role === Role.SUPER_ADMIN ? null : (parsed.data.tenantId ?? null);
+  const passwordHash = parsed.data.password ? await hashPassword(parsed.data.password) : undefined;
 
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
@@ -394,7 +412,11 @@ export async function updateSuperAdminUserAction(formData: FormData) {
       data: {
         name: parsed.data.name,
         email: parsed.data.email,
-        role: parsed.data.role
+        role: parsed.data.role,
+        tenantId: nextTenantId,
+        isBlocked: parsed.data.isBlocked,
+        blockedAt: parsed.data.isBlocked ? new Date() : null,
+        ...(passwordHash ? { passwordHash } : {})
       }
     });
 
@@ -405,6 +427,17 @@ export async function updateSuperAdminUserAction(formData: FormData) {
           actorUserId: session.id,
           action: "USER_UPDATED",
           description: `Usuário ${parsed.data.email} atualizado pelo Super Admin.`
+        }
+      });
+    }
+
+    if (nextTenantId && nextTenantId !== user.tenantId) {
+      await tx.tenantActivityLog.create({
+        data: {
+          tenantId: nextTenantId,
+          actorUserId: session.id,
+          action: "USER_UPDATED",
+          description: `Usuário ${parsed.data.email} vinculado a esta barbearia pelo Super Admin.`
         }
       });
     }
@@ -442,10 +475,6 @@ export async function toggleSuperAdminUserBlockAction(formData: FormData) {
 
   if (session.id === user.id) {
     redirect(buildRedirectUrl(redirectTo, { error: "Você não pode bloquear o próprio usuário." }));
-  }
-
-  if (user.role === Role.SUPER_ADMIN) {
-    redirect(buildRedirectUrl(redirectTo, { error: "Bloqueio de contas Super Admin não é permitido por esta tela." }));
   }
 
   const nextBlockedState = !user.isBlocked;
@@ -507,10 +536,6 @@ export async function deleteSuperAdminUserAction(formData: FormData) {
 
   if (session.id === user.id) {
     redirect(buildRedirectUrl(redirectTo, { error: "Você não pode excluir o próprio usuário." }));
-  }
-
-  if (user.role === Role.SUPER_ADMIN) {
-    redirect(buildRedirectUrl(redirectTo, { error: "Exclusão de Super Admin não é permitida por esta tela." }));
   }
 
   await prisma.$transaction(async (tx) => {

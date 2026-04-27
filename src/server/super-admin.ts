@@ -302,38 +302,49 @@ export async function listSuperAdminUsers(rawFilters: Record<string, string | st
     query: typeof rawFilters.query === "string" ? rawFilters.query : undefined
   });
 
-  const users = await prisma.user.findMany({
-    where: filters.query
-      ? {
-          OR: [
-            { name: { contains: filters.query, mode: "insensitive" } },
-            { email: { contains: filters.query, mode: "insensitive" } },
-            { tenant: { is: { name: { contains: filters.query, mode: "insensitive" } } } },
-            { tenant: { is: { slug: { contains: filters.query, mode: "insensitive" } } } }
-          ]
-        }
-      : undefined,
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      isBlocked: true,
-      blockedAt: true,
-      createdAt: true,
-      tenantId: true,
-      tenant: {
-        select: {
-          name: true,
-          slug: true
+  const [users, tenants] = await Promise.all([
+    prisma.user.findMany({
+      where: filters.query
+        ? {
+            OR: [
+              { name: { contains: filters.query, mode: "insensitive" } },
+              { email: { contains: filters.query, mode: "insensitive" } },
+              { tenant: { is: { name: { contains: filters.query, mode: "insensitive" } } } },
+              { tenant: { is: { slug: { contains: filters.query, mode: "insensitive" } } } }
+            ]
+          }
+        : undefined,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isBlocked: true,
+        blockedAt: true,
+        createdAt: true,
+        tenantId: true,
+        tenant: {
+          select: {
+            name: true,
+            slug: true
+          }
         }
       }
-    }
-  });
+    }),
+    prisma.tenant.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true
+      }
+    })
+  ]);
 
   return {
     filters,
+    tenants,
     users
   };
 }
