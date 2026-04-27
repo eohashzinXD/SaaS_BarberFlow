@@ -4,6 +4,7 @@ import {
 import { env } from "@/lib/env";
 import {
   markPendingSignupCheckoutPaid,
+  provisionPaidSignupFromCheckout,
   provisionPaidSignupFromSubscription,
   syncTenantFromSubscriptionEvent
 } from "@/server/billing";
@@ -105,6 +106,9 @@ export async function POST(request: Request) {
     case "checkout.completed":
       await markPendingSignupCheckoutPaid(
         event.data as Parameters<typeof markPendingSignupCheckoutPaid>[0]
+      );
+      await provisionPaidSignupFromCheckout(
+        event.data as Parameters<typeof provisionPaidSignupFromCheckout>[0]
       );
       break;
     case "subscription.completed":

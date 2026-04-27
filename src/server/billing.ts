@@ -62,6 +62,12 @@ type ExternalReference =
   | { kind: "signup"; id: string }
   | { kind: "tenant"; id: string };
 
+type ProvisionPaidSignupInput = {
+  signupId: string;
+  customerId?: string | null;
+  subscriptionId?: string | null;
+};
+
 function assertBillingConfigured() {
   if (!env.abacatePayProductId) {
     throw new Error("ABACATEPAY_PRODUCT_ID is not configured.");
@@ -306,30 +312,35 @@ export async function markPendingSignupCheckoutPaid(payload: AbacatePayCheckoutW
   });
 }
 
-export async function provisionPaidSignupFromSubscription(
-  payload: AbacatePaySubscriptionWebhookPayload
-) {
-  const externalReference = parseExternalReference(getSubscriptionExternalReference(payload));
-
-  if (!externalReference || externalReference.kind !== "signup") {
-    return;
-  }
-
+async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
   const pendingSignup = await prisma.pendingSignup.findUnique({
-    where: { id: externalReference.id }
+    where: { id: params.signupId }
   });
 
   if (!pendingSignup) {
     return;
   }
 
+  const billingCustomerId = params.customerId ?? pendingSignup.billingCustomerId;
+  const subscriptionStartDate = new Date();
+  const subscriptionCurrentPeriodEnd = getNextSubscriptionPeriodEnd(subscriptionStartDate);
+
   if (pendingSignup.status === PendingSignupStatus.PROVISIONED && pendingSignup.tenantId) {
     await updateTenantBilling({
       tenantId: pendingSignup.tenantId,
       billingStatus: BillingStatus.ACTIVE,
-      customerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
-      subscriptionId: payload.subscription.id,
-      subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd()
+      customerId: billingCustomerId,
+      subscriptionId: params.subscriptionId,
+      subscriptionCurrentPeriodEnd
+    });
+
+    await prisma.pendingSignup.update({
+      where: { id: pendingSignup.id },
+      data: {
+        ...(billingCustomerId ? { billingCustomerId } : {}),
+        ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
+        ...(pendingSignup.completedAt ? {} : { completedAt: subscriptionStartDate })
+      }
     });
     return;
   }
@@ -345,10 +356,10 @@ export async function provisionPaidSignupFromSubscription(
         where: { id: existingUser.tenantId },
         data: {
           billingStatus: BillingStatus.ACTIVE,
-          billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
-          billingSubscriptionId: payload.subscription.id,
-          subscriptionStartDate: new Date(),
-          subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd()
+          ...(billingCustomerId ? { billingCustomerId } : {}),
+          ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
+          subscriptionStartDate,
+          subscriptionCurrentPeriodEnd
         }
       });
 
@@ -357,9 +368,9 @@ export async function provisionPaidSignupFromSubscription(
         data: {
           status: PendingSignupStatus.PROVISIONED,
           tenantId: existingUser.tenantId,
-          billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
-          billingSubscriptionId: payload.subscription.id,
-          completedAt: new Date()
+          ...(billingCustomerId ? { billingCustomerId } : {}),
+          ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
+          completedAt: subscriptionStartDate
         }
       });
       return;
@@ -370,10 +381,10 @@ export async function provisionPaidSignupFromSubscription(
         name: pendingSignup.barbershopName,
         slug: pendingSignup.slug,
         billingStatus: BillingStatus.ACTIVE,
-        billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
-        billingSubscriptionId: payload.subscription.id,
-        subscriptionStartDate: new Date(),
-        subscriptionCurrentPeriodEnd: getNextSubscriptionPeriodEnd()
+        ...(billingCustomerId ? { billingCustomerId } : {}),
+        ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
+        subscriptionStartDate,
+        subscriptionCurrentPeriodEnd
       }
     });
 
@@ -399,11 +410,40 @@ export async function provisionPaidSignupFromSubscription(
       data: {
         status: PendingSignupStatus.PROVISIONED,
         tenantId: tenant.id,
-        billingCustomerId: payload.customer?.id ?? pendingSignup.billingCustomerId,
-        billingSubscriptionId: payload.subscription.id,
-        completedAt: new Date()
+        ...(billingCustomerId ? { billingCustomerId } : {}),
+        ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
+        completedAt: subscriptionStartDate
       }
     });
+  });
+}
+
+export async function provisionPaidSignupFromCheckout(payload: AbacatePayCheckoutWebhookPayload) {
+  const externalReference = parseExternalReference(payload.checkout.externalId);
+
+  if (!externalReference || externalReference.kind !== "signup") {
+    return;
+  }
+
+  await provisionPaidSignup({
+    signupId: externalReference.id,
+    customerId: payload.customer?.id ?? payload.checkout.customerId
+  });
+}
+
+export async function provisionPaidSignupFromSubscription(
+  payload: AbacatePaySubscriptionWebhookPayload
+) {
+  const externalReference = parseExternalReference(getSubscriptionExternalReference(payload));
+
+  if (!externalReference || externalReference.kind !== "signup") {
+    return;
+  }
+
+  await provisionPaidSignup({
+    signupId: externalReference.id,
+    customerId: payload.customer?.id,
+    subscriptionId: payload.subscription.id
   });
 }
 

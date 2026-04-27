@@ -1,10 +1,15 @@
-import { Role } from "@prisma/client";
+import { BillingStatus, PendingSignupStatus, Role } from "@prisma/client";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
 import { registerTenantAccount } from "@/server/accounts";
 import { resolveAccess } from "@/server/auth/access";
 import { listBarbersByTenant } from "@/server/barbers";
+import {
+  markPendingSignupCheckoutPaid,
+  provisionPaidSignupFromCheckout,
+  provisionPaidSignupFromSubscription
+} from "@/server/billing";
 
 async function resetDatabase() {
   await prisma.appointment.deleteMany();
@@ -63,5 +68,90 @@ describe("integration flows", () => {
     expect(resolveAccess({ pathname: "/dashboard", hasSession: false })).toBe("login");
     expect(resolveAccess({ pathname: "/dashboard/services", hasSession: true })).toBe("allow");
     expect(resolveAccess({ pathname: "/login", hasSession: true })).toBe("dashboard");
+  });
+
+  it("activates a paid signup from checkout completion and later attaches the subscription id", async () => {
+    const pendingSignup = await prisma.pendingSignup.create({
+      data: {
+        ownerName: "Paulo Teste",
+        email: "paulo-teste@example.com",
+        passwordHash: "hashed-password",
+        barbershopName: "Barbearia Teste",
+        slug: "barbearia-teste",
+        status: PendingSignupStatus.CHECKOUT_OPEN
+      }
+    });
+
+    await markPendingSignupCheckoutPaid({
+      checkout: {
+        id: "bill_checkout_test",
+        externalId: `signup:${pendingSignup.id}`,
+        customerId: "cust_checkout_test",
+        status: "PAID"
+      },
+      customer: {
+        id: "cust_checkout_test",
+        email: "paulo-teste@example.com",
+        name: "Paulo Teste"
+      }
+    });
+
+    await provisionPaidSignupFromCheckout({
+      checkout: {
+        id: "bill_checkout_test",
+        externalId: `signup:${pendingSignup.id}`,
+        customerId: "cust_checkout_test",
+        status: "PAID"
+      },
+      customer: {
+        id: "cust_checkout_test",
+        email: "paulo-teste@example.com",
+        name: "Paulo Teste"
+      }
+    });
+
+    const provisionedSignup = await prisma.pendingSignup.findUniqueOrThrow({
+      where: { id: pendingSignup.id }
+    });
+    const provisionedTenant = await prisma.tenant.findUniqueOrThrow({
+      where: { id: provisionedSignup.tenantId! }
+    });
+    const provisionedUser = await prisma.user.findUniqueOrThrow({
+      where: { email: "paulo-teste@example.com" }
+    });
+
+    expect(provisionedSignup.status).toBe(PendingSignupStatus.PROVISIONED);
+    expect(provisionedSignup.billingCustomerId).toBe("cust_checkout_test");
+    expect(provisionedSignup.billingSubscriptionId).toBeNull();
+    expect(provisionedTenant.billingStatus).toBe(BillingStatus.ACTIVE);
+    expect(provisionedTenant.billingCustomerId).toBe("cust_checkout_test");
+    expect(provisionedTenant.billingSubscriptionId).toBeNull();
+    expect(provisionedUser.tenantId).toBe(provisionedTenant.id);
+
+    await provisionPaidSignupFromSubscription({
+      payment: {
+        externalId: `signup:${pendingSignup.id}`
+      },
+      customer: {
+        id: "cust_checkout_test",
+        email: "paulo-teste@example.com",
+        name: "Paulo Teste"
+      },
+      subscription: {
+        id: "subs_checkout_test",
+        status: "ACTIVE"
+      }
+    });
+
+    const syncedSignup = await prisma.pendingSignup.findUniqueOrThrow({
+      where: { id: pendingSignup.id }
+    });
+    const syncedTenant = await prisma.tenant.findUniqueOrThrow({
+      where: { id: provisionedTenant.id }
+    });
+
+    expect(syncedSignup.billingSubscriptionId).toBe("subs_checkout_test");
+    expect(syncedTenant.billingSubscriptionId).toBe("subs_checkout_test");
+    expect(syncedTenant.billingStatus).toBe(BillingStatus.ACTIVE);
   });
 });
