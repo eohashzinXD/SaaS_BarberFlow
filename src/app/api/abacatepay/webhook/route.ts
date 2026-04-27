@@ -76,12 +76,14 @@ function hasValidWebhookSecret(request: Request) {
 
 export async function POST(request: Request) {
   if (!hasValidWebhookSecret(request)) {
+    console.warn("[abacatepay:webhook] invalid webhook secret");
     return new Response("Invalid webhook secret.", { status: 401 });
   }
 
   const signature = getWebhookSignature(request);
 
   if (!signature) {
+    console.warn("[abacatepay:webhook] missing signature header");
     return new Response("Missing AbacatePay signature.", { status: 400 });
   }
 
@@ -89,9 +91,11 @@ export async function POST(request: Request) {
 
   try {
     if (!verifyAbacatePayWebhookSignature(rawBody, signature)) {
+      console.warn("[abacatepay:webhook] signature verification failed");
       return new Response("Webhook signature verification failed.", { status: 400 });
     }
   } catch (error) {
+    console.error("[abacatepay:webhook] validation error", error);
     return new Response(
       error instanceof Error ? error.message : "Webhook validation failed.",
       { status: 500 }
@@ -102,31 +106,46 @@ export async function POST(request: Request) {
 
   const eventName = event.event ?? event.type;
 
-  switch (eventName) {
-    case "checkout.completed":
-      await markPendingSignupCheckoutPaid(
-        event.data as Parameters<typeof markPendingSignupCheckoutPaid>[0]
-      );
-      await provisionPaidSignupFromCheckout(
-        event.data as Parameters<typeof provisionPaidSignupFromCheckout>[0]
-      );
-      break;
-    case "subscription.completed":
-      await provisionPaidSignupFromSubscription(
-        event.data as Parameters<typeof provisionPaidSignupFromSubscription>[0]
-      );
-      await syncTenantFromSubscriptionEvent(
-        event.data as Parameters<typeof syncTenantFromSubscriptionEvent>[0]
-      );
-      break;
-    case "subscription.renewed":
-    case "subscription.cancelled":
-      await syncTenantFromSubscriptionEvent(
-        event.data as Parameters<typeof syncTenantFromSubscriptionEvent>[0]
-      );
-      break;
-    default:
-      break;
+  console.info("[abacatepay:webhook] received event", {
+    eventName,
+    checkoutId: "checkout" in event.data && event.data.checkout ? event.data.checkout.id : null,
+    checkoutExternalId:
+      "checkout" in event.data && event.data.checkout ? event.data.checkout.externalId : null,
+    paymentExternalId: "payment" in event.data && event.data.payment ? event.data.payment.externalId : null,
+    subscriptionId: "subscription" in event.data ? event.data.subscription.id : null
+  });
+
+  try {
+    switch (eventName) {
+      case "checkout.completed":
+        await markPendingSignupCheckoutPaid(
+          event.data as Parameters<typeof markPendingSignupCheckoutPaid>[0]
+        );
+        await provisionPaidSignupFromCheckout(
+          event.data as Parameters<typeof provisionPaidSignupFromCheckout>[0]
+        );
+        break;
+      case "subscription.completed":
+        await provisionPaidSignupFromSubscription(
+          event.data as Parameters<typeof provisionPaidSignupFromSubscription>[0]
+        );
+        await syncTenantFromSubscriptionEvent(
+          event.data as Parameters<typeof syncTenantFromSubscriptionEvent>[0]
+        );
+        break;
+      case "subscription.renewed":
+      case "subscription.cancelled":
+        await syncTenantFromSubscriptionEvent(
+          event.data as Parameters<typeof syncTenantFromSubscriptionEvent>[0]
+        );
+        break;
+      default:
+        console.info("[abacatepay:webhook] ignored event", { eventName });
+        break;
+    }
+  } catch (error) {
+    console.error("[abacatepay:webhook] processing error", { eventName, error });
+    return new Response("Webhook processing failed.", { status: 500 });
   }
 
   return Response.json({ received: true });

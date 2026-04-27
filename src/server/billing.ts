@@ -294,10 +294,14 @@ export async function markPendingSignupCheckoutPaid(payload: AbacatePayCheckoutW
   const externalReference = parseExternalReference(payload.checkout.externalId);
 
   if (!externalReference || externalReference.kind !== "signup") {
+    console.info("[abacatepay:webhook] checkout.completed without signup reference", {
+      checkoutId: payload.checkout.id,
+      externalId: payload.checkout.externalId
+    });
     return;
   }
 
-  await prisma.pendingSignup.updateMany({
+  const result = await prisma.pendingSignup.updateMany({
     where: {
       id: externalReference.id,
       status: {
@@ -310,6 +314,12 @@ export async function markPendingSignupCheckoutPaid(payload: AbacatePayCheckoutW
       billingCustomerId: payload.customer?.id ?? payload.checkout.customerId ?? undefined
     }
   });
+
+  console.info("[abacatepay:webhook] checkout.completed signup sync", {
+    signupId: externalReference.id,
+    checkoutId: payload.checkout.id,
+    updatedRows: result.count
+  });
 }
 
 async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
@@ -318,6 +328,10 @@ async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
   });
 
   if (!pendingSignup) {
+    console.warn("[abacatepay:webhook] signup not found for provisioning", {
+      signupId: params.signupId,
+      subscriptionId: params.subscriptionId ?? null
+    });
     return;
   }
 
@@ -341,6 +355,12 @@ async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
         ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
         ...(pendingSignup.completedAt ? {} : { completedAt: subscriptionStartDate })
       }
+    });
+
+    console.info("[abacatepay:webhook] signup already provisioned, billing synced", {
+      signupId: pendingSignup.id,
+      tenantId: pendingSignup.tenantId,
+      subscriptionId: params.subscriptionId ?? null
     });
     return;
   }
@@ -372,6 +392,12 @@ async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
           ...(params.subscriptionId ? { billingSubscriptionId: params.subscriptionId } : {}),
           completedAt: subscriptionStartDate
         }
+      });
+
+      console.info("[abacatepay:webhook] existing user signup provisioned", {
+        signupId: pendingSignup.id,
+        tenantId: existingUser.tenantId,
+        subscriptionId: params.subscriptionId ?? null
       });
       return;
     }
@@ -415,6 +441,12 @@ async function provisionPaidSignup(params: ProvisionPaidSignupInput) {
         completedAt: subscriptionStartDate
       }
     });
+
+    console.info("[abacatepay:webhook] new tenant signup provisioned", {
+      signupId: pendingSignup.id,
+      tenantId: tenant.id,
+      subscriptionId: params.subscriptionId ?? null
+    });
   });
 }
 
@@ -422,6 +454,10 @@ export async function provisionPaidSignupFromCheckout(payload: AbacatePayCheckou
   const externalReference = parseExternalReference(payload.checkout.externalId);
 
   if (!externalReference || externalReference.kind !== "signup") {
+    console.info("[abacatepay:webhook] checkout provisioning skipped", {
+      checkoutId: payload.checkout.id,
+      externalId: payload.checkout.externalId
+    });
     return;
   }
 
@@ -437,6 +473,11 @@ export async function provisionPaidSignupFromSubscription(
   const externalReference = parseExternalReference(getSubscriptionExternalReference(payload));
 
   if (!externalReference || externalReference.kind !== "signup") {
+    console.info("[abacatepay:webhook] subscription provisioning skipped", {
+      subscriptionId: payload.subscription.id,
+      paymentExternalId: payload.payment?.externalId ?? null,
+      checkoutExternalId: payload.checkout?.externalId ?? null
+    });
     return;
   }
 
