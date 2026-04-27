@@ -1,6 +1,57 @@
+import { AppointmentStatus, BillingStatus } from "@prisma/client";
+import { endOfDay, startOfDay } from "date-fns";
 import Link from "next/link";
 
-export default function HomePage() {
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
+
+async function getLandingMetrics() {
+  const today = new Date();
+  const activeTenantWhere = {
+    billingStatus: BillingStatus.ACTIVE,
+    isBlocked: false
+  };
+
+  const [appointmentsToday, activeBarbers, publishedServices] = await Promise.all([
+    prisma.appointment.count({
+      where: {
+        startAt: {
+          gte: startOfDay(today),
+          lte: endOfDay(today)
+        },
+        status: {
+          not: AppointmentStatus.CANCELED
+        },
+        tenant: activeTenantWhere
+      }
+    }),
+    prisma.barber.count({
+      where: {
+        tenant: activeTenantWhere
+      }
+    }),
+    prisma.service.count({
+      where: {
+        tenant: activeTenantWhere
+      }
+    })
+  ]);
+
+  return {
+    appointmentsToday,
+    activeBarbers,
+    publishedServices
+  };
+}
+
+function pluralize(value: number, singular: string, plural: string) {
+  return value === 1 ? singular : plural;
+}
+
+export default async function HomePage() {
+  const metrics = await getLandingMetrics();
+
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
       <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
@@ -37,16 +88,24 @@ export default function HomePage() {
           <div className="space-y-6">
             <div className="rounded-2xl bg-secondary p-5">
               <p className="text-sm font-medium text-muted-foreground">Hoje</p>
-              <p className="mt-2 text-3xl font-bold">12 agendamentos</p>
+              <p className="mt-2 text-3xl font-bold">
+                {metrics.appointmentsToday}{" "}
+                {pluralize(metrics.appointmentsToday, "agendamento", "agendamentos")}
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-border p-5">
                 <p className="text-sm text-muted-foreground">Barbeiros</p>
-                <p className="mt-2 text-2xl font-bold">4 ativos</p>
+                <p className="mt-2 text-2xl font-bold">
+                  {metrics.activeBarbers} {pluralize(metrics.activeBarbers, "ativo", "ativos")}
+                </p>
               </div>
               <div className="rounded-2xl border border-border p-5">
                 <p className="text-sm text-muted-foreground">Serviços</p>
-                <p className="mt-2 text-2xl font-bold">9 publicados</p>
+                <p className="mt-2 text-2xl font-bold">
+                  {metrics.publishedServices}{" "}
+                  {pluralize(metrics.publishedServices, "publicado", "publicados")}
+                </p>
               </div>
             </div>
             <div className="rounded-2xl border border-dashed border-border p-5">

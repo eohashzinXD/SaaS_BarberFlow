@@ -60,7 +60,7 @@ SaaS de agendamento para barbearias com Next.js App Router, TypeScript strict, P
 
 ## Variáveis de ambiente
 
-Copie `.env.example` para `.env` se necessário.
+Defina as variáveis abaixo no ambiente local ou na Vercel.
 
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -80,6 +80,13 @@ Webhook sugerido no painel do AbacatePay:
 ```text
 POST {NEXT_PUBLIC_APP_URL}/api/abacatepay/webhook?webhookSecret={ABACATEPAY_WEBHOOK_SECRET}
 ```
+
+## Deploy na Vercel
+
+- Garanta que a `DATABASE_URL` de produção aponte para o banco correto. Se estiver usando Neon compartilhado, prefira isolar o app com `?schema=barbersaas`.
+- O Prisma Client agora é regenerado em `postinstall` e antes do `build`, evitando deploy com client desatualizado após mudanças no `schema.prisma`.
+- Rode `npx prisma migrate deploy` no banco de produção antes de validar o login e o painel.
+- Configure também `NEXT_PUBLIC_APP_URL`, `AUTH_SECRET`, `APP_TIMEZONE` e as chaves do AbacatePay no ambiente de produção.
 
 ## Rodando com Docker
 
