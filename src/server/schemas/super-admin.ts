@@ -8,6 +8,10 @@ const slugSchema = z
   .regex(/^[a-z0-9-]+$/, "Use apenas letras minúsculas, números e hífen.");
 
 const optionalString = z.string().trim().max(300).optional();
+const passwordSchema = z
+  .string()
+  .min(8, "A senha deve ter pelo menos 8 caracteres.")
+  .max(72, "A senha é muito longa.");
 
 export const superAdminBarbershopFiltersSchema = z.object({
   query: z.string().trim().optional(),
@@ -31,6 +35,35 @@ export const tenantUpdateSchema = z.object({
   ownerName: z.string().trim().min(3, "Informe o nome do responsável.").optional(),
   ownerEmail: z.email("Informe um e-mail válido.").optional()
 });
+
+export const tenantCreateSchema = z
+  .object({
+    name: z.string().trim().min(3, "Informe o nome da barbearia."),
+    slug: slugSchema,
+    description: z.string().trim().max(1000, "A descrição pode ter no máximo 1000 caracteres.").optional(),
+    address: optionalString,
+    phone: z.string().trim().max(50).optional(),
+    trialDays: z.coerce
+      .number()
+      .int("O teste deve ser um número inteiro.")
+      .min(1, "Informe pelo menos 1 dia de teste.")
+      .max(365, "O teste pode ter no máximo 365 dias."),
+    ownerName: z.string().trim().min(3, "Informe o nome do responsável.").optional(),
+    ownerEmail: z.email("Informe um e-mail válido.").optional(),
+    ownerPassword: passwordSchema.optional()
+  })
+  .superRefine((data, ctx) => {
+    const ownerFields = [data.ownerName, data.ownerEmail, data.ownerPassword];
+    const hasAnyOwnerField = ownerFields.some(Boolean);
+    const hasAllOwnerFields = ownerFields.every(Boolean);
+
+    if (hasAnyOwnerField && !hasAllOwnerFields) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Para criar o responsável, informe nome, e-mail e senha."
+      });
+    }
+  });
 
 export const tenantSubscriptionSchema = z.object({
   tenantId: z.string().min(1),
@@ -57,11 +90,16 @@ export const userUpdateSchema = z.object({
   userId: z.string().min(1),
   name: z.string().trim().min(3, "Informe o nome do usuário."),
   email: z.email("Informe um e-mail válido."),
-  password: z
-    .string()
-    .min(8, "A senha deve ter pelo menos 8 caracteres.")
-    .max(72, "A senha é muito longa.")
-    .optional(),
+  password: passwordSchema.optional(),
+  role: z.nativeEnum(Role),
+  tenantId: z.string().trim().optional(),
+  isBlocked: z.boolean()
+});
+
+export const userCreateSchema = z.object({
+  name: z.string().trim().min(3, "Informe o nome do usuário."),
+  email: z.email("Informe um e-mail válido."),
+  password: passwordSchema,
   role: z.nativeEnum(Role),
   tenantId: z.string().trim().optional(),
   isBlocked: z.boolean()

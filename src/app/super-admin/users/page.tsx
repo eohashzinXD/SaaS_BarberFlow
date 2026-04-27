@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { formatDate } from "@/lib/formatters";
 import { getFlashFromSearchParams } from "@/lib/navigation";
 import {
+  createSuperAdminUserAction,
   deleteSuperAdminUserAction,
   toggleSuperAdminUserBlockAction,
   updateSuperAdminUserAction
@@ -93,6 +94,81 @@ export default async function SuperAdminUsersPage({
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cadastrar usuário</CardTitle>
+          <CardDescription>
+            Crie acessos manualmente, vinculando a uma barbearia ou criando uma conta interna.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createSuperAdminUserAction} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <input name="redirectTo" type="hidden" value={currentPath} />
+            <div className="space-y-2">
+              <Label htmlFor="create-name">Nome</Label>
+              <Input id="create-name" name="name" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-email">E-mail</Label>
+              <Input id="create-email" name="email" required type="email" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-password">Senha</Label>
+              <Input
+                autoComplete="new-password"
+                id="create-password"
+                minLength={8}
+                name="password"
+                required
+                type="password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-role">Role</Label>
+              <select
+                className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                defaultValue={Role.ADMIN}
+                id="create-role"
+                name="role"
+              >
+                {roleOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2 xl:col-span-2">
+              <Label htmlFor="create-tenant">Barbearia vinculada</Label>
+              <select
+                className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                id="create-tenant"
+                name="tenantId"
+              >
+                <option value="">Conta interna da plataforma</option>
+                {tenants.map((tenant) => (
+                  <option key={tenant.id} value={tenant.id}>
+                    {tenant.name} /{tenant.slug}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Para ADMIN, STAFF ou CUSTOMER, selecione uma barbearia.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+              <input className="h-4 w-4 rounded border-border" id="create-isBlocked" name="isBlocked" type="checkbox" />
+              <Label className="text-sm font-medium" htmlFor="create-isBlocked">
+                Criar bloqueado
+              </Label>
+            </div>
+            <div className="flex items-end">
+              <Button type="submit">Cadastrar usuário</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="space-y-4">
         {users.map((user) => (

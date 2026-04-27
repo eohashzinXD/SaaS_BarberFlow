@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/formatters";
 import { getFlashFromSearchParams } from "@/lib/navigation";
 import {
   blockSuperAdminBarbershopAction,
+  createSuperAdminBarbershopAction,
   deleteSuperAdminBarbershopAction,
   unblockSuperAdminBarbershopAction
 } from "@/server/actions/super-admin";
@@ -85,6 +86,69 @@ export default async function SuperAdminBarbershopsPage({
                 <Link href="/super-admin/barbershops">Limpar</Link>
               </Button>
             </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cadastrar barbearia</CardTitle>
+          <CardDescription>
+            Crie uma barbearia manualmente com acesso ativo até o fim do período de teste.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={createSuperAdminBarbershopAction} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <input name="redirectTo" type="hidden" value={currentPath} />
+            <div className="space-y-2">
+              <Label htmlFor="create-name">Nome da barbearia</Label>
+              <Input id="create-name" name="name" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-slug">Slug</Label>
+              <Input id="create-slug" name="slug" placeholder="minha-barbearia" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-trialDays">Período de teste (dias)</Label>
+              <Input defaultValue={7} id="create-trialDays" min={1} name="trialDays" required type="number" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-phone">Telefone</Label>
+              <Input id="create-phone" name="phone" />
+            </div>
+            <div className="space-y-2 xl:col-span-2">
+              <Label htmlFor="create-address">Endereço</Label>
+              <Input id="create-address" name="address" />
+            </div>
+            <div className="space-y-2 xl:col-span-2">
+              <Label htmlFor="create-description">Descrição</Label>
+              <Textarea id="create-description" name="description" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-ownerName">Responsável inicial</Label>
+              <Input id="create-ownerName" name="ownerName" placeholder="Opcional" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-ownerEmail">E-mail do responsável</Label>
+              <Input id="create-ownerEmail" name="ownerEmail" placeholder="Opcional" type="email" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-ownerPassword">Senha do responsável</Label>
+              <Input
+                autoComplete="new-password"
+                id="create-ownerPassword"
+                minLength={8}
+                name="ownerPassword"
+                placeholder="Opcional"
+                type="password"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button type="submit">Cadastrar barbearia</Button>
+            </div>
+            <p className="text-xs text-muted-foreground md:col-span-2 xl:col-span-4">
+              Se preencher um responsável inicial, informe nome, e-mail e senha. Ele será criado como ADMIN.
+            </p>
           </form>
         </CardContent>
       </Card>

@@ -1,6 +1,7 @@
 "use server";
 
-import { Role } from "@prisma/client";
+import { BillingStatus, Role } from "@prisma/client";
+import { addDays } from "date-fns";
 import { redirect } from "next/navigation";
 
 import { buildRedirectUrl } from "@/lib/navigation";
@@ -9,9 +10,11 @@ import { hashPassword } from "@/server/auth/password";
 import { requireSuperAdminSession } from "@/server/auth/tenant-session";
 import {
   tenantBlockSchema,
+  tenantCreateSchema,
   tenantDeleteSchema,
   tenantSubscriptionSchema,
   tenantUpdateSchema,
+  userCreateSchema,
   userDeleteSchema,
   userToggleBlockSchema,
   userUpdateSchema
@@ -39,6 +42,104 @@ function parseDateInput(value?: string) {
 
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export async function createSuperAdminBarbershopAction(formData: FormData) {
+  const session = await requireSuperAdminSession();
+  const redirectTo = getRedirectTarget(formData, "/super-admin/barbershops");
+  const parsed = tenantCreateSchema.safeParse({
+    name: getString(formData, "name"),
+    slug: getString(formData, "slug").toLowerCase(),
+    description: getOptionalString(formData, "description"),
+    address: getOptionalString(formData, "address"),
+    phone: getOptionalString(formData, "phone"),
+    trialDays: getString(formData, "trialDays") || "7",
+    ownerName: getOptionalString(formData, "ownerName"),
+    ownerEmail: getOptionalString(formData, "ownerEmail")?.toLowerCase(),
+    ownerPassword: getOptionalString(formData, "ownerPassword")
+  });
+
+  if (!parsed.success) {
+    redirect(buildRedirectUrl(redirectTo, { error: parsed.error.issues[0]?.message }));
+  }
+
+  const [slugConflict, ownerEmailConflict] = await Promise.all([
+    prisma.tenant.findUnique({
+      where: { slug: parsed.data.slug },
+      select: { id: true }
+    }),
+    parsed.data.ownerEmail
+      ? prisma.user.findUnique({
+          where: { email: parsed.data.ownerEmail },
+          select: { id: true }
+        })
+      : Promise.resolve(null)
+  ]);
+
+  if (slugConflict) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Este slug já está em uso." }));
+  }
+
+  if (ownerEmailConflict) {
+    redirect(buildRedirectUrl(redirectTo, { error: "O e-mail do responsável já está em uso." }));
+  }
+
+  const subscriptionStartDate = new Date();
+  const subscriptionCurrentPeriodEnd = addDays(subscriptionStartDate, parsed.data.trialDays);
+  const ownerPasswordHash = parsed.data.ownerPassword
+    ? await hashPassword(parsed.data.ownerPassword)
+    : undefined;
+
+  const tenant = await prisma.$transaction(async (tx) => {
+    const createdTenant = await tx.tenant.create({
+      data: {
+        name: parsed.data.name,
+        slug: parsed.data.slug,
+        billingStatus: BillingStatus.ACTIVE,
+        subscriptionStartDate,
+        subscriptionCurrentPeriodEnd,
+        gracePeriodDays: 0
+      }
+    });
+
+    await tx.barbershopProfile.create({
+      data: {
+        tenantId: createdTenant.id,
+        description: parsed.data.description ?? null,
+        address: parsed.data.address ?? null,
+        phone: parsed.data.phone ?? null
+      }
+    });
+
+    if (parsed.data.ownerName && parsed.data.ownerEmail && ownerPasswordHash) {
+      await tx.user.create({
+        data: {
+          name: parsed.data.ownerName,
+          email: parsed.data.ownerEmail,
+          passwordHash: ownerPasswordHash,
+          role: Role.ADMIN,
+          tenantId: createdTenant.id
+        }
+      });
+    }
+
+    await tx.tenantActivityLog.create({
+      data: {
+        tenantId: createdTenant.id,
+        actorUserId: session.id,
+        action: "TENANT_CREATED",
+        description: `Barbearia criada pelo Super Admin com ${parsed.data.trialDays} dia(s) de teste.`
+      }
+    });
+
+    return createdTenant;
+  });
+
+  redirect(
+    buildRedirectUrl(`/super-admin/barbershops/${tenant.id}`, {
+      success: "Barbearia criada com período de teste ativo."
+    })
+  );
 }
 
 export async function updateSuperAdminBarbershopAction(formData: FormData) {
@@ -331,6 +432,78 @@ export async function deleteSuperAdminBarbershopAction(formData: FormData) {
   ]);
 
   redirect(buildRedirectUrl("/super-admin/barbershops", { success: `${tenant.name} foi excluída.` }));
+}
+
+export async function createSuperAdminUserAction(formData: FormData) {
+  const session = await requireSuperAdminSession();
+  const redirectTo = getRedirectTarget(formData, "/super-admin/users");
+  const parsed = userCreateSchema.safeParse({
+    name: getString(formData, "name"),
+    email: getString(formData, "email").toLowerCase(),
+    password: getString(formData, "password"),
+    role: getString(formData, "role"),
+    tenantId: getOptionalString(formData, "tenantId"),
+    isBlocked: formData.get("isBlocked") === "on"
+  });
+
+  if (!parsed.success) {
+    redirect(buildRedirectUrl(redirectTo, { error: parsed.error.issues[0]?.message }));
+  }
+
+  const [emailConflict, tenant] = await Promise.all([
+    prisma.user.findUnique({
+      where: { email: parsed.data.email },
+      select: { id: true }
+    }),
+    parsed.data.tenantId
+      ? prisma.tenant.findUnique({
+          where: { id: parsed.data.tenantId },
+          select: { id: true }
+        })
+      : Promise.resolve(null)
+  ]);
+
+  if (emailConflict) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Este e-mail já está em uso." }));
+  }
+
+  if (parsed.data.tenantId && !tenant) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Tenant informado não foi encontrado." }));
+  }
+
+  if (parsed.data.role !== Role.SUPER_ADMIN && !parsed.data.tenantId) {
+    redirect(buildRedirectUrl(redirectTo, { error: "Usuários comuns precisam estar vinculados a uma barbearia." }));
+  }
+
+  const tenantId = parsed.data.role === Role.SUPER_ADMIN ? null : (parsed.data.tenantId ?? null);
+  const passwordHash = await hashPassword(parsed.data.password);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.create({
+      data: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        passwordHash,
+        role: parsed.data.role,
+        tenantId,
+        isBlocked: parsed.data.isBlocked,
+        blockedAt: parsed.data.isBlocked ? new Date() : null
+      }
+    });
+
+    if (tenantId) {
+      await tx.tenantActivityLog.create({
+        data: {
+          tenantId,
+          actorUserId: session.id,
+          action: "USER_CREATED",
+          description: `Usuário ${parsed.data.email} criado pelo Super Admin.`
+        }
+      });
+    }
+  });
+
+  redirect(buildRedirectUrl(redirectTo, { success: "Usuário criado com sucesso." }));
 }
 
 export async function updateSuperAdminUserAction(formData: FormData) {
