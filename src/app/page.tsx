@@ -57,14 +57,14 @@ export default async function HomePage() {
       <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div className="space-y-8">
           <span className="inline-flex rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground">
-            BarberFlow
+            Flow
           </span>
           <div className="space-y-5">
             <h1 className="max-w-3xl text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
-              Gerencie seus cortes de forma simples e eficiente.
+              Gerencie seus Agendamentos de forma simples e eficiente.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              Cadastre sua barbearia, publique sua página em segundos e gerencie serviços,
+              Cadastre seu negocio, publique sua página em segundos e gerencie serviços,
               horários e agendamentos.
             </p>
           </div>
@@ -110,7 +110,7 @@ export default async function HomePage() {
             </div>
             <div className="rounded-2xl border border-dashed border-border p-5">
               <p className="text-sm text-muted-foreground">
-                Página pública pronta para SEO e fluxo de booking sem login.
+                Cada negócio ganha uma página própria, otimizada para aparecer no Google e pronta para receber agendamentos — sem obrigar o cliente a criar uma conta.
               </p>
             </div>
           </div>
