@@ -44,7 +44,7 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
       bullets={[
         "A Nexora protege o acesso quando o ciclo de cobrança exige atenção.",
         "As mensagens abaixo resumem o status operacional da assinatura.",
-        "Após regularização, o acesso ao workspace volta ao normal."
+        "Após a regularização, o acesso ao painel volta ao normal."
       ]}
       description="O acesso foi pausado para preservar o estado contratual da sua operação dentro da Nexora."
       eyebrow="Nexora Billing Control"

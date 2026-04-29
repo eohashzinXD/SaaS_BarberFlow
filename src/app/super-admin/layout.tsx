@@ -25,7 +25,7 @@ export default async function SuperAdminLayout({ children }: SuperAdminLayoutPro
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-8 lg:flex-row lg:px-8">
         <aside className="surface-panel w-full p-6 lg:sticky lg:top-6 lg:w-80 lg:self-start">
           <div className="space-y-6">
-            <BrandLockup subtitle="Platform command center" />
+            <BrandLockup subtitle="Central administrativa" />
             <div className="surface-muted flex items-start gap-3 p-4">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/[0.12] text-primary">
                 <ShieldCheck className="h-5 w-5" />

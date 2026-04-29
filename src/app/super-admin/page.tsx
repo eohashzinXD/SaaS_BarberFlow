@@ -24,7 +24,7 @@ export default async function SuperAdminDashboardPage({
   return (
     <div className="space-y-8">
       <SectionHeader
-        description="Visão global da operação SaaS, com status de tenants, usuários e cobrança."
+        description="Visão global da operação, com status de tenants, usuários e cobrança."
         eyebrow="Nexora Platform"
         title="Command center"
         actions={

@@ -58,12 +58,12 @@ export default async function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-6 py-12 lg:px-8">
       <div className="mb-8 flex items-center justify-between">
-        <BrandLockup subtitle="Scheduling and operations platform" />
+        <BrandLockup subtitle="Agendamento e gestão profissional" />
         <Link
           className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
           href="/login"
         >
-          Acessar workspace
+          Acessar painel
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -73,7 +73,7 @@ export default async function HomePage() {
           <span className="section-kicker">Nexora Workspace</span>
           <div className="space-y-5">
             <h1 className="max-w-4xl font-display text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">
-              Operação, agenda e gestão em um SaaS com presença de marca profissional.
+              Operação, agenda e gestão com identidade profissional e presença de marca consistente.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
               A Nexora centraliza agendamentos, equipe, serviços e visibilidade pública em uma experiência
@@ -106,7 +106,7 @@ export default async function HomePage() {
             </div>
             <div className="surface-muted flex items-start gap-3 px-4 py-4 text-sm text-muted-foreground">
               <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
-              Controle de acesso e billing com fluxo de SaaS real.
+              Controle de acesso e cobrança com operação previsível.
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default async function HomePage() {
                 Uma vitrine profissional para sua operação.
               </h2>
               <p className="text-sm leading-7 text-muted-foreground">
-                Landing pública, workspace interno e estrutura multi-tenant alinhados na mesma identidade.
+                Página pública, painel interno e estrutura multi-tenant alinhados na mesma identidade.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">

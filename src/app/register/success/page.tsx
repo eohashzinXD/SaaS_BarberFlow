@@ -28,7 +28,7 @@ export default async function RegisterSuccessPage({ searchParams }: RegisterSucc
         "Sua operação é criada apenas após a validação do pagamento.",
         "O painel Nexora fica disponível assim que o status muda para provisionado."
       ]}
-      description="A Nexora mantém o onboarding sincronizado com o gateway para garantir ativação segura e previsível."
+      description="A Nexora mantém a ativação sincronizada com o gateway para garantir segurança e previsibilidade."
       eyebrow="Nexora Billing"
       title={isReady ? "Sua assinatura foi ativada com sucesso." : "Pagamento recebido. Finalizando ativação."}
     >
@@ -38,7 +38,7 @@ export default async function RegisterSuccessPage({ searchParams }: RegisterSucc
             <CardTitle>{isReady ? "Conta pronta para acesso" : "Confirmação em processamento"}</CardTitle>
             <CardDescription>
               {isReady
-                ? "Sua assinatura foi ativada e o workspace Nexora já está disponível."
+                ? "Sua assinatura foi ativada e o painel Nexora já está disponível."
                 : "Estamos concluindo a ativação com base na confirmação do webhook do gateway."}
             </CardDescription>
           </CardHeader>

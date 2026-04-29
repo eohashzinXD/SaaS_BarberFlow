@@ -24,13 +24,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthShell
       bullets={[
-        "Controle agenda, equipe e catálogo em um único workspace.",
-        "Acesso com billing e provisionamento alinhados ao fluxo SaaS.",
+        "Controle agenda, equipe e catálogo em um único painel.",
+        "Acesso com cobrança e provisionamento alinhados ao fluxo operacional.",
         "Experiência limpa para operação diária e expansão do negócio."
       ]}
       description="Entre no ambiente Nexora para acompanhar a agenda, manter dados operacionais atualizados e responder com velocidade ao dia a dia do negócio."
       eyebrow="Nexora Access"
-      title="Acesse seu workspace com a mesma clareza que sua equipe precisa operar."
+      title="Acesse seu painel com a mesma clareza que sua equipe precisa para operar."
     >
       <div className="space-y-6">
         {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}

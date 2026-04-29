@@ -27,7 +27,7 @@ export function AuthShell({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(72,149,239,0.32),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.16),transparent_28%)]" />
           <div className="relative flex h-full flex-col justify-between gap-12">
             <div className="space-y-10">
-              <BrandLockup subtitle="Scheduling and operations platform" tone="light" />
+              <BrandLockup subtitle="Agendamento e gestão profissional" tone="light" />
               <div className="space-y-4">
                 <span className="inline-flex rounded-full border border-white/15 bg-white/8 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white/72">
                   {eyebrow}

@@ -34,7 +34,7 @@ export default async function EditBarberPage({ params, searchParams }: EditBarbe
   return (
     <div className="space-y-6">
       <SectionHeader
-        description="Atualize os dados exibidos no workspace e na experiência pública."
+        description="Atualize os dados exibidos no painel e na experiência pública."
         eyebrow="Nexora Workspace"
         title="Editar profissional"
         actions={

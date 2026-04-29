@@ -24,9 +24,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         "Página pública, equipe e catálogo em um fluxo de ativação único.",
         "Arquitetura multi-tenant preparada para escalar com consistência."
       ]}
-      description="Crie sua operação na Nexora com uma experiência de onboarding objetiva, consistente e pronta para produção."
+      description="Crie sua operação na Nexora com uma ativação objetiva, consistente e pronta para uso."
       eyebrow="Nexora Onboarding"
-      title="Ative sua operação com uma identidade SaaS clara desde o primeiro acesso."
+      title="Ative sua operação com uma identidade clara desde o primeiro acesso."
     >
       <div className="space-y-6">
         {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}

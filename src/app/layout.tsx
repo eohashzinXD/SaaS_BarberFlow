@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     default: "Nexora",
     template: "%s | Nexora"
   },
-  description: "Nexora é a plataforma SaaS para agendamento, operação e gestão profissional de negócios de serviços.",
+  description: "Nexora é uma plataforma profissional para agendamento, operação e gestão de negócios de serviços.",
   applicationName: "Nexora"
 };
 
