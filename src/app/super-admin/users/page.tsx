@@ -181,13 +181,13 @@ export default async function SuperAdminUsersPage({
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold ${
                         user.isBlocked
-                          ? "bg-rose-100 text-rose-900"
-                          : "bg-emerald-100 text-emerald-900"
+                          ? "bg-rose-100 text-rose-900 dark:bg-rose-950/70 dark:text-rose-100"
+                          : "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-100"
                       }`}
                     >
                       {user.isBlocked ? "Bloqueado" : "Ativo"}
                     </span>
-                    <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-900">
+                    <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-900 dark:bg-slate-800 dark:text-slate-100">
                       {user.role}
                     </span>
                   </div>

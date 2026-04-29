@@ -84,8 +84,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
       <Card>
         <CardHeader>
-          <CardTitle>Billing</CardTitle>
-          <CardDescription>Controle a assinatura que libera o acesso ao SaaS.</CardDescription>
+          <CardTitle>Assinatura</CardTitle>
+          <CardDescription>Sua Assinatura.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-2xl border border-border p-4 text-sm text-muted-foreground">
@@ -112,7 +112,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </form>
           ) : (
             <p className="text-sm text-muted-foreground">
-              A assinatura está ativa. Se quiser alterar o plano ou cancelar, faça isso pelo painel do AbacatePay.
+              A assinatura está ativa. Se quiser alterar o plano ou cancelar, Entre em contato com o Proprietario
             </p>
           )}
         </CardContent>

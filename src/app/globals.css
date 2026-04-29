@@ -24,6 +24,30 @@
   --ring: 18 82% 38%;
   --radius: 1rem;
   --font-sans: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+.dark {
+  --background: 22 20% 8%;
+  --foreground: 35 22% 94%;
+  --card: 24 18% 11%;
+  --card-foreground: 35 22% 94%;
+  --popover: 24 18% 11%;
+  --popover-foreground: 35 22% 94%;
+  --primary: 22 88% 58%;
+  --primary-foreground: 24 20% 10%;
+  --secondary: 24 12% 18%;
+  --secondary-foreground: 34 24% 92%;
+  --muted: 22 10% 16%;
+  --muted-foreground: 28 12% 70%;
+  --accent: 156 36% 20%;
+  --accent-foreground: 150 42% 88%;
+  --destructive: 0 72% 56%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 24 12% 24%;
+  --input: 24 12% 24%;
+  --ring: 22 88% 58%;
+  color-scheme: dark;
 }
 
 * {
@@ -37,4 +61,15 @@ body {
     radial-gradient(circle at top right, rgba(76, 142, 102, 0.14), transparent 26%),
     linear-gradient(180deg, rgba(255, 248, 239, 0.92), rgba(249, 245, 239, 0.98));
   min-height: 100vh;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.dark body {
+  background-image:
+    radial-gradient(circle at top left, rgba(255, 140, 64, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(72, 168, 118, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(20, 16, 14, 0.98), rgba(14, 12, 11, 1));
 }
