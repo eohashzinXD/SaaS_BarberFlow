@@ -1,8 +1,11 @@
 import { addDays } from "date-fns";
+import { CalendarCheck2, Clock4, MapPin, Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { BrandLockup } from "@/components/brand";
 import { FlashMessage } from "@/components/flash-message";
 import { SubmitButton } from "@/components/submit-button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,30 +67,35 @@ export default async function PublicBarbershopPage({
       {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
       {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}
 
-      <section className="grid gap-6 rounded-[2rem] border border-border bg-card/95 p-8 shadow-xl shadow-primary/5 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-6 rounded-[2rem] border border-border bg-card/[0.95] p-8 shadow-xl shadow-primary/[0.05] lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-5">
-          <span className="inline-flex rounded-full bg-secondary px-3 py-1 text-sm font-semibold text-secondary-foreground">
-            Página pública da barbearia
-          </span>
+          <BrandLockup compact subtitle="Powered by Nexora" />
+          <span className="section-kicker">Página pública Nexora</span>
           <div className="space-y-3">
-            <h1 className="text-4xl font-extrabold tracking-tight">{bookingContext.shop.name}</h1>
+            <h1 className="font-display text-4xl font-semibold tracking-tight">{bookingContext.shop.name}</h1>
             <p className="max-w-2xl text-muted-foreground">
               {bookingContext.shop.profile?.description ?? "Agendamentos online disponíveis."}
             </p>
           </div>
           <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-            <div>
-              <p className="font-semibold text-foreground">Endereço</p>
+            <div className="surface-muted p-4">
+              <p className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
+                Endereço
+              </p>
               <p>{bookingContext.shop.profile?.address ?? "Não informado"}</p>
             </div>
-            <div>
-              <p className="font-semibold text-foreground">Telefone</p>
+            <div className="surface-muted p-4">
+              <p className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                <Phone className="h-4 w-4 text-primary" />
+                Telefone
+              </p>
               <p>{bookingContext.shop.profile?.phone ?? "Não informado"}</p>
             </div>
           </div>
         </div>
 
-        <Card className="border-secondary bg-secondary/40">
+        <Card className="border-secondary bg-secondary/[0.4]">
           <CardHeader>
             <CardTitle>Horários de funcionamento</CardTitle>
           </CardHeader>
@@ -116,7 +124,7 @@ export default async function PublicBarbershopPage({
           </CardHeader>
           <CardContent className="space-y-4">
             {bookingContext.shop.services.map((service) => (
-              <div key={service.id} className="rounded-2xl border border-border p-4">
+              <div key={service.id} className="rounded-2xl border border-border/[0.8] bg-secondary/[0.25] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold">{service.name}</p>
                   <p className="text-sm font-semibold">{formatCurrency(service.price.toString())}</p>
@@ -137,7 +145,7 @@ export default async function PublicBarbershopPage({
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             {bookingContext.shop.barbers.map((barber) => (
-              <div key={barber.id} className="rounded-2xl border border-border p-4 text-sm font-semibold">
+              <div key={barber.id} className="rounded-2xl border border-border/[0.8] bg-secondary/[0.25] p-4 text-sm font-semibold">
                 {barber.name}
               </div>
             ))}
@@ -149,44 +157,32 @@ export default async function PublicBarbershopPage({
         <CardHeader>
           <CardTitle>Agendar atendimento</CardTitle>
           <CardDescription>
-            Escolha serviço, barbeiro, data e horário. O status inicial do agendamento é pendente.
+            Escolha serviço, profissional, data e horário. O status inicial do agendamento é pendente.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           <form className="grid gap-5 md:grid-cols-3" method="get">
             <div className="space-y-2">
               <Label htmlFor="serviceId">Serviço</Label>
-              <select
-                className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm"
-                defaultValue={bookingContext.selectedService?.id ?? ""}
-                id="serviceId"
-                name="serviceId"
-                required
-              >
+              <NativeSelect defaultValue={bookingContext.selectedService?.id ?? ""} id="serviceId" name="serviceId" required>
                 <option value="">Selecione</option>
                 {bookingContext.shop.services.map((service) => (
                   <option key={service.id} value={service.id}>
                     {service.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="barberId">Barbeiro</Label>
-              <select
-                className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm"
-                defaultValue={bookingContext.selectedBarber?.id ?? ""}
-                id="barberId"
-                name="barberId"
-                required
-              >
+              <Label htmlFor="barberId">Profissional</Label>
+              <NativeSelect defaultValue={bookingContext.selectedBarber?.id ?? ""} id="barberId" name="barberId" required>
                 <option value="">Selecione</option>
                 {bookingContext.shop.barbers.map((barber) => (
                   <option key={barber.id} value={barber.id}>
                     {barber.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="space-y-2">
               <Label htmlFor="date">Data</Label>
@@ -240,7 +236,7 @@ export default async function PublicBarbershopPage({
           ) : null}
 
           {bookingContext.selectedService && bookingContext.selectedBarber && selectedSlot ? (
-            <Card className="bg-secondary/30">
+            <Card className="bg-secondary/[0.3]">
               <CardHeader>
                 <CardTitle>Confirmar agendamento</CardTitle>
                 <CardDescription>
@@ -248,15 +244,20 @@ export default async function PublicBarbershopPage({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="mb-6 grid gap-2 rounded-2xl border border-border p-4 text-sm text-muted-foreground">
+                <div className="mb-6 grid gap-3 rounded-2xl border border-border p-4 text-sm text-muted-foreground">
                   <p>
                     <strong className="text-foreground">Serviço:</strong> {bookingContext.selectedService.name}
                   </p>
                   <p>
-                    <strong className="text-foreground">Barbeiro:</strong> {bookingContext.selectedBarber.name}
+                    <strong className="text-foreground">Profissional:</strong> {bookingContext.selectedBarber.name}
                   </p>
                   <p>
                     <strong className="text-foreground">Data:</strong> {selectedDate} às {selectedSlot.label}
+                  </p>
+                  <p className="inline-flex items-center gap-2">
+                    <CalendarCheck2 className="h-4 w-4 text-primary" />
+                    <Clock4 className="h-4 w-4 text-primary" />
+                    Reserva operada pela Nexora
                   </p>
                 </div>
                 <form action={createPublicAppointmentAction} className="grid gap-5 md:grid-cols-2">

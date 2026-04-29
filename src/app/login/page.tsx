@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AuthShell } from "@/components/auth-shell";
 import { FlashMessage } from "@/components/flash-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,43 +22,52 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       : "";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md items-center px-6 py-16">
-      <div className="w-full space-y-6">
+    <AuthShell
+      bullets={[
+        "Controle agenda, equipe e catálogo em um único workspace.",
+        "Acesso com billing e provisionamento alinhados ao fluxo SaaS.",
+        "Experiência limpa para operação diária e expansão do negócio."
+      ]}
+      description="Entre no ambiente Nexora para acompanhar a agenda, manter dados operacionais atualizados e responder com velocidade ao dia a dia do negócio."
+      eyebrow="Nexora Access"
+      title="Acesse seu workspace com a mesma clareza que sua equipe precisa operar."
+    >
+      <div className="space-y-6">
         {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
         {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}
 
         <Card>
           <CardHeader>
-            <CardTitle>Entrar no painel</CardTitle>
+            <CardTitle>Entrar na Nexora</CardTitle>
             <CardDescription>
-              Use o e-mail e a senha do administrador para acessar sua barbearia.
+              Use o e-mail e a senha da conta administradora para acessar sua operação.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={loginAction} className="space-y-5">
               <input name="callbackUrl" type="hidden" value={callbackUrl} />
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input id="email" name="email" required type="email" />
+                <Label htmlFor="email">E-mail corporativo</Label>
+                <Input id="email" name="email" placeholder="voce@empresa.com" required type="email" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <Input id="password" name="password" required type="password" />
               </div>
               <SubmitButton className="w-full" pendingLabel="Entrando...">
-                Entrar
+                Entrar no painel
               </SubmitButton>
             </form>
           </CardContent>
         </Card>
 
         <p className="text-center text-sm text-muted-foreground">
-          Ainda não tem conta?{" "}
-          <Link className="font-semibold text-foreground underline" href="/register">
-            Criar barbearia
+          Ainda não opera com a Nexora?{" "}
+          <Link className="font-semibold text-foreground underline underline-offset-4" href="/register">
+            Criar conta
           </Link>
         </p>
       </div>
-    </main>
+    </AuthShell>
   );
 }

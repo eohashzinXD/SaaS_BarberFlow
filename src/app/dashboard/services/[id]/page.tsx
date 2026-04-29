@@ -35,8 +35,9 @@ export default async function EditServicePage({ params, searchParams }: EditServ
   return (
     <div className="space-y-6">
       <SectionHeader
+        description="Atualize as informações que organizam o booking, o catálogo e a agenda."
+        eyebrow="Nexora Workspace"
         title="Editar serviço"
-        description="Atualize os detalhes usados no booking e na agenda."
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/services">Voltar</Link>
@@ -46,7 +47,7 @@ export default async function EditServicePage({ params, searchParams }: EditServ
       {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}
       <Card>
         <CardContent className="p-6">
-          <form action={updateServiceAction} className="grid gap-5 md:grid-cols-2">
+          <form action={updateServiceAction} className="grid-form">
             <input name="serviceId" type="hidden" value={service.id} />
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="name">Nome</Label>
@@ -69,7 +70,12 @@ export default async function EditServicePage({ params, searchParams }: EditServ
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description">Descrição</Label>
-              <Textarea defaultValue={service.description ?? ""} id="description" name="description" />
+              <Textarea
+                defaultValue={service.description ?? ""}
+                id="description"
+                name="description"
+                placeholder="Descreva a proposta, o benefício e o posicionamento deste serviço."
+              />
             </div>
             <div className="md:col-span-2">
               <SubmitButton pendingLabel="Salvando...">Atualizar serviço</SubmitButton>

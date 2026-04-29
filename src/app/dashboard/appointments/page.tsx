@@ -4,6 +4,7 @@ import { addDays, subDays } from "date-fns";
 import { FlashMessage } from "@/components/flash-message";
 import { SectionHeader } from "@/components/section-header";
 import { SubmitButton } from "@/components/submit-button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,8 +45,9 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
   return (
     <div className="space-y-6">
       <SectionHeader
+        description="Acompanhe os agendamentos do dia, ajuste status e mantenha a operação em ritmo previsível."
+        eyebrow="Nexora Workspace"
         title="Agenda"
-        description="Acompanhe os agendamentos do dia, altere status e remarcações."
       />
 
       {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
@@ -100,17 +102,12 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
                     <input name="date" type="hidden" value={currentDate} />
                     <div className="space-y-2">
                       <Label htmlFor={`status-${appointment.id}`}>Atualizar status</Label>
-                      <select
-                        className="flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm"
-                        defaultValue={appointment.status}
-                        id={`status-${appointment.id}`}
-                        name="status"
-                      >
+                      <NativeSelect defaultValue={appointment.status} id={`status-${appointment.id}`} name="status">
                         <option value="PENDING">Pendente</option>
                         <option value="CONFIRMED">Confirmado</option>
                         <option value="CANCELED">Cancelado</option>
                         <option value="DONE">Concluído</option>
-                      </select>
+                      </NativeSelect>
                     </div>
                     <SubmitButton pendingLabel="Atualizando..." variant="outline">
                       Atualizar

@@ -34,8 +34,9 @@ export default async function EditBarberPage({ params, searchParams }: EditBarbe
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Editar barbeiro"
-        description="Atualize os dados exibidos no painel e na página pública."
+        description="Atualize os dados exibidos no workspace e na experiência pública."
+        eyebrow="Nexora Workspace"
+        title="Editar profissional"
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/barbers">Voltar</Link>
@@ -51,7 +52,7 @@ export default async function EditBarberPage({ params, searchParams }: EditBarbe
               <Label htmlFor="name">Nome</Label>
               <Input defaultValue={barber.name} id="name" name="name" required />
             </div>
-            <SubmitButton pendingLabel="Salvando...">Atualizar barbeiro</SubmitButton>
+            <SubmitButton pendingLabel="Salvando...">Atualizar profissional</SubmitButton>
           </form>
         </CardContent>
       </Card>

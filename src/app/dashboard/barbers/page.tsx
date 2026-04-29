@@ -23,11 +23,12 @@ export default async function BarbersPage({ searchParams }: BarbersPageProps) {
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Barbeiros"
-        description="Cadastre e mantenha atualizado o time disponível para atendimento."
+        description="Gerencie o time disponível para atendimento com uma visão clara da operação."
+        eyebrow="Nexora Workspace"
+        title="Equipe"
         actions={
           <Button asChild>
-            <Link href="/dashboard/barbers/new">Novo barbeiro</Link>
+            <Link href="/dashboard/barbers/new">Novo profissional</Link>
           </Button>
         }
       />
@@ -42,6 +43,7 @@ export default async function BarbersPage({ searchParams }: BarbersPageProps) {
               <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-lg font-semibold">{barber.name}</p>
+                  <p className="text-sm text-muted-foreground">Profissional disponível no catálogo e no fluxo de agendamento.</p>
                 </div>
                 <div className="flex gap-3">
                   <Button asChild variant="outline">
@@ -58,11 +60,11 @@ export default async function BarbersPage({ searchParams }: BarbersPageProps) {
         </div>
       ) : (
         <EmptyState
-          title="Nenhum barbeiro cadastrado"
-          description="Cadastre o primeiro profissional para liberar o fluxo de agendamento."
+          title="Nenhum profissional cadastrado"
+          description="Cadastre o primeiro integrante do time para liberar disponibilidade na agenda."
           action={
             <Button asChild>
-              <Link href="/dashboard/barbers/new">Cadastrar barbeiro</Link>
+              <Link href="/dashboard/barbers/new">Cadastrar profissional</Link>
             </Button>
           }
         />

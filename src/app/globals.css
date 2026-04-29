@@ -3,50 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: 32 33% 97%;
-  --foreground: 20 18% 12%;
+  --background: 210 40% 98%;
+  --foreground: 223 32% 14%;
   --card: 0 0% 100%;
-  --card-foreground: 20 18% 12%;
+  --card-foreground: 223 32% 14%;
   --popover: 0 0% 100%;
-  --popover-foreground: 20 18% 12%;
-  --primary: 18 82% 38%;
-  --primary-foreground: 35 100% 97%;
-  --secondary: 42 28% 91%;
-  --secondary-foreground: 20 18% 12%;
-  --muted: 40 18% 92%;
-  --muted-foreground: 24 12% 42%;
-  --accent: 144 42% 88%;
-  --accent-foreground: 151 46% 18%;
+  --popover-foreground: 223 32% 14%;
+  --primary: 220 88% 54%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 214 34% 94%;
+  --secondary-foreground: 223 32% 18%;
+  --muted: 215 28% 94%;
+  --muted-foreground: 220 12% 42%;
+  --accent: 191 76% 48%;
+  --accent-foreground: 214 100% 98%;
   --destructive: 0 72% 49%;
   --destructive-foreground: 0 0% 98%;
-  --border: 30 18% 84%;
-  --input: 30 18% 84%;
-  --ring: 18 82% 38%;
+  --border: 214 28% 88%;
+  --input: 214 28% 88%;
+  --ring: 220 88% 54%;
   --radius: 1rem;
-  --font-sans: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
   color-scheme: light;
 }
 
 .dark {
-  --background: 22 20% 8%;
-  --foreground: 35 22% 94%;
-  --card: 24 18% 11%;
-  --card-foreground: 35 22% 94%;
-  --popover: 24 18% 11%;
-  --popover-foreground: 35 22% 94%;
-  --primary: 22 88% 58%;
-  --primary-foreground: 24 20% 10%;
-  --secondary: 24 12% 18%;
-  --secondary-foreground: 34 24% 92%;
-  --muted: 22 10% 16%;
-  --muted-foreground: 28 12% 70%;
-  --accent: 156 36% 20%;
-  --accent-foreground: 150 42% 88%;
+  --background: 222 46% 8%;
+  --foreground: 210 40% 96%;
+  --card: 222 39% 11%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222 39% 11%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 216 100% 66%;
+  --primary-foreground: 224 44% 12%;
+  --secondary: 223 26% 18%;
+  --secondary-foreground: 210 32% 92%;
+  --muted: 223 24% 16%;
+  --muted-foreground: 217 15% 68%;
+  --accent: 191 88% 58%;
+  --accent-foreground: 222 46% 8%;
   --destructive: 0 72% 56%;
   --destructive-foreground: 0 0% 98%;
-  --border: 24 12% 24%;
-  --input: 24 12% 24%;
-  --ring: 22 88% 58%;
+  --border: 223 18% 22%;
+  --input: 223 18% 22%;
+  --ring: 216 100% 66%;
   color-scheme: dark;
 }
 
@@ -57,9 +56,10 @@
 body {
   @apply bg-background text-foreground antialiased;
   background-image:
-    radial-gradient(circle at top left, rgba(225, 125, 52, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(76, 142, 102, 0.14), transparent 26%),
-    linear-gradient(180deg, rgba(255, 248, 239, 0.92), rgba(249, 245, 239, 0.98));
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 32%),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(249, 251, 255, 0.98), rgba(243, 247, 255, 1));
+  font-family: var(--font-sans), sans-serif;
   min-height: 100vh;
   transition:
     background-color 180ms ease,
@@ -69,7 +69,34 @@ body {
 
 .dark body {
   background-image:
-    radial-gradient(circle at top left, rgba(255, 140, 64, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(72, 168, 118, 0.14), transparent 24%),
-    linear-gradient(180deg, rgba(20, 16, 14, 0.98), rgba(14, 12, 11, 1));
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(8, 15, 30, 0.98), rgba(6, 11, 24, 1));
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.22);
+  color: hsl(var(--foreground));
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+
+@layer components {
+  .surface-panel {
+    @apply rounded-[1.75rem] border border-border/[0.8] bg-card/[0.92] shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur;
+  }
+
+  .surface-muted {
+    @apply rounded-[1.4rem] border border-border/[0.7] bg-secondary/[0.7];
+  }
+
+  .section-kicker {
+    @apply inline-flex rounded-full border border-primary/[0.15] bg-primary/[0.1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary;
+  }
+
+  .grid-form {
+    @apply grid gap-5 md:grid-cols-2;
+  }
 }

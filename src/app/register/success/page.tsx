@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AuthShell } from "@/components/auth-shell";
 import { FlashMessage } from "@/components/flash-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,22 +22,31 @@ export default async function RegisterSuccessPage({ searchParams }: RegisterSucc
   const isReady = signup?.status === "PROVISIONED";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl items-center px-6 py-16">
+    <AuthShell
+      bullets={[
+        "O provisionamento depende da confirmação segura do webhook.",
+        "Sua operação é criada apenas após a validação do pagamento.",
+        "O painel Nexora fica disponível assim que o status muda para provisionado."
+      ]}
+      description="A Nexora mantém o onboarding sincronizado com o gateway para garantir ativação segura e previsível."
+      eyebrow="Nexora Billing"
+      title={isReady ? "Sua assinatura foi ativada com sucesso." : "Pagamento recebido. Finalizando ativação."}
+    >
       <div className="w-full space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>{isReady ? "Pagamento confirmado" : "Pagamento recebido"}</CardTitle>
+            <CardTitle>{isReady ? "Conta pronta para acesso" : "Confirmação em processamento"}</CardTitle>
             <CardDescription>
               {isReady
-                ? "Sua assinatura foi ativada e sua conta já pode acessar o painel."
-                : "Estamos finalizando a ativação da sua conta com base na confirmação do webhook do gateway."}
+                ? "Sua assinatura foi ativada e o workspace Nexora já está disponível."
+                : "Estamos concluindo a ativação com base na confirmação do webhook do gateway."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {signup ? (
-              <div className="rounded-2xl border border-border p-4 text-sm text-muted-foreground">
+              <div className="surface-muted grid gap-2 p-4 text-sm text-muted-foreground">
                 <p>
-                  <strong className="text-foreground">Barbearia:</strong> {signup.barbershopName}
+                  <strong className="text-foreground">Operação:</strong> {signup.barbershopName}
                 </p>
                 <p>
                   <strong className="text-foreground">E-mail:</strong> {signup.email}
@@ -65,6 +75,6 @@ export default async function RegisterSuccessPage({ searchParams }: RegisterSucc
           </CardContent>
         </Card>
       </div>
-    </main>
+    </AuthShell>
   );
 }

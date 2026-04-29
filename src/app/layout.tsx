@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 
 import "@/app/globals.css";
@@ -29,9 +30,23 @@ const themeScript = `
   })();
 `;
 
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-sans"
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display"
+});
+
 export const metadata: Metadata = {
-  title: "Barber SaaS",
-  description: "Plataforma SaaS de agendamento para barbearias com multi-tenant seguro."
+  title: {
+    default: "Nexora",
+    template: "%s | Nexora"
+  },
+  description: "Nexora é a plataforma SaaS para agendamento, operação e gestão profissional de negócios de serviços.",
+  applicationName: "Nexora"
 };
 
 type RootLayoutProps = Readonly<{
@@ -40,7 +55,11 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html
+      className={`${manrope.variable} ${spaceGrotesk.variable}`}
+      lang="pt-BR"
+      suppressHydrationWarning
+    >
       <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeScript}

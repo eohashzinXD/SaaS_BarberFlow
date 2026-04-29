@@ -65,7 +65,7 @@ export function ThemeToggle() {
     <div className="fixed right-4 top-4 z-50">
       <Button
         aria-label={label}
-        className="rounded-full border-border/80 bg-card/85 shadow-lg shadow-black/5 backdrop-blur"
+        className="rounded-full border-border/[0.8] bg-card/[0.85] shadow-lg shadow-black/5 backdrop-blur"
         disabled={!mounted}
         onClick={() => {
           applyTheme(nextTheme);

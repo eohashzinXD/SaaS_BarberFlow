@@ -21,8 +21,9 @@ export default async function NewBarberPage({ searchParams }: NewBarberPageProps
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Novo barbeiro"
-        description="Adicione um profissional ao catálogo interno e público."
+        description="Adicione um novo profissional ao catálogo interno e à experiência pública."
+        eyebrow="Nexora Workspace"
+        title="Novo profissional"
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/barbers">Voltar</Link>
@@ -35,9 +36,9 @@ export default async function NewBarberPage({ searchParams }: NewBarberPageProps
           <form action={createBarberAction} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
-              <Input id="name" name="name" required />
+              <Input id="name" name="name" placeholder="Nome do profissional" required />
             </div>
-            <SubmitButton pendingLabel="Salvando...">Salvar barbeiro</SubmitButton>
+            <SubmitButton pendingLabel="Salvando...">Salvar profissional</SubmitButton>
           </form>
         </CardContent>
       </Card>

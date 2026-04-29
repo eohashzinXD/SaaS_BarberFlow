@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FlashMessage } from "@/components/flash-message";
+import { MetricCard } from "@/components/metric-card";
 import { SectionHeader } from "@/components/section-header";
 import { PlatformStatusBadge } from "@/components/super-admin/platform-status-badge";
 import { Button } from "@/components/ui/button";
@@ -23,12 +24,13 @@ export default async function SuperAdminDashboardPage({
   return (
     <div className="space-y-8">
       <SectionHeader
-        title="Super Admin"
         description="Visão global da operação SaaS, com status de tenants, usuários e cobrança."
+        eyebrow="Nexora Platform"
+        title="Command center"
         actions={
           <div className="flex gap-3">
             <Button asChild variant="outline">
-              <Link href="/super-admin/barbershops">Gerenciar barbearias</Link>
+              <Link href="/super-admin/barbershops">Gerenciar operações</Link>
             </Button>
             <Button asChild>
               <Link href="/super-admin/users">Gerenciar usuários</Link>
@@ -41,42 +43,10 @@ export default async function SuperAdminDashboardPage({
       {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Barbearias cadastradas</CardTitle>
-            <CardDescription>Total de tenants provisionados.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{snapshot.totalTenants}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Usuários da plataforma</CardTitle>
-            <CardDescription>Exceto contas internas de Super Admin.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{snapshot.totalUsers}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Barbearias ativas</CardTitle>
-            <CardDescription>Tenants liberados para uso.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{snapshot.activeTenants}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Agendamentos totais</CardTitle>
-            <CardDescription>Volume acumulado na plataforma.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{snapshot.totalAppointments}</p>
-          </CardContent>
-        </Card>
+        <MetricCard hint="Tenants provisionados" label="Operações cadastradas" value={snapshot.totalTenants} />
+        <MetricCard accent="emerald" hint="Sem contas internas de Super Admin" label="Usuários da plataforma" value={snapshot.totalUsers} />
+        <MetricCard accent="primary" hint="Tenants liberados para uso" label="Operações ativas" value={snapshot.activeTenants} />
+        <MetricCard accent="amber" hint="Volume acumulado do produto" label="Agendamentos totais" value={snapshot.totalAppointments} />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
@@ -115,7 +85,7 @@ export default async function SuperAdminDashboardPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Barbearias recentes</CardTitle>
+          <CardTitle>Operações recentes</CardTitle>
           <CardDescription>Atalho rápido para revisar novos tenants e pendências.</CardDescription>
         </CardHeader>
         <CardContent>

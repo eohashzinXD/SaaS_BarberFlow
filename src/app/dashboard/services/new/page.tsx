@@ -22,8 +22,9 @@ export default async function NewServicePage({ searchParams }: NewServicePagePro
   return (
     <div className="space-y-6">
       <SectionHeader
+        description="Estruture um novo serviço com posicionamento claro no catálogo Nexora."
+        eyebrow="Nexora Workspace"
         title="Novo serviço"
-        description="Configure um serviço com duração e preço para a agenda."
         actions={
           <Button asChild variant="outline">
             <Link href="/dashboard/services">Voltar</Link>
@@ -33,7 +34,7 @@ export default async function NewServicePage({ searchParams }: NewServicePagePro
       {flash.error ? <FlashMessage message={flash.error} type="error" /> : null}
       <Card>
         <CardContent className="p-6">
-          <form action={createServiceAction} className="grid gap-5 md:grid-cols-2">
+          <form action={createServiceAction} className="grid-form">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="name">Nome</Label>
               <Input id="name" name="name" required />
@@ -48,7 +49,7 @@ export default async function NewServicePage({ searchParams }: NewServicePagePro
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description">Descrição</Label>
-              <Textarea id="description" name="description" />
+              <Textarea id="description" name="description" placeholder="Descreva a experiência, técnica ou diferenciais do serviço." />
             </div>
             <div className="md:col-span-2">
               <SubmitButton pendingLabel="Salvando...">Salvar serviço</SubmitButton>

@@ -37,8 +37,9 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   return (
     <div className="space-y-6">
       <SectionHeader
+        description="Ajuste presença pública, horários e informações de assinatura com a identidade da sua operação."
+        eyebrow="Nexora Workspace"
         title="Configurações"
-        description="Edite os dados públicos da barbearia e o horário de funcionamento."
       />
 
       {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
@@ -46,13 +47,13 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
       <Card>
         <CardHeader>
-          <CardTitle>Dados públicos</CardTitle>
-          <CardDescription>Esses dados aparecem na página pública da barbearia.</CardDescription>
+          <CardTitle>Identidade pública</CardTitle>
+          <CardDescription>Esses dados aparecem na experiência pública exibida aos clientes.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={updateSettingsAction} className="grid gap-5 md:grid-cols-2">
+          <form action={updateSettingsAction} className="grid-form">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome da barbearia</Label>
+              <Label htmlFor="name">Nome da operação</Label>
               <Input defaultValue={tenant?.name ?? ""} id="name" name="name" required />
             </div>
             <div className="space-y-2">
@@ -73,6 +74,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 defaultValue={tenant?.profile?.description ?? ""}
                 id="description"
                 name="description"
+                placeholder="Explique o posicionamento, a experiência e os diferenciais da sua operação."
               />
             </div>
             <div className="md:col-span-2">
@@ -112,7 +114,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </form>
           ) : (
             <p className="text-sm text-muted-foreground">
-              A assinatura está ativa. Se quiser alterar o plano ou cancelar, Entre em contato com o Proprietario
+              A assinatura está ativa. Para ajustar plano ou cancelamento, fale com o responsável financeiro da operação.
             </p>
           )}
         </CardContent>
@@ -122,7 +124,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <CardHeader>
           <CardTitle>Horários de funcionamento</CardTitle>
           <CardDescription>
-            Deixe um dia em branco para marcá-lo como fechado no fluxo de booking.
+            Deixe um dia em branco para marcá-lo como fechado na jornada de agendamento.
           </CardDescription>
         </CardHeader>
         <CardContent>

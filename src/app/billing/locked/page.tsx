@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { AuthShell } from "@/components/auth-shell";
 import { FlashMessage } from "@/components/flash-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +40,16 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
   const canOpenBilling = !session.isBlocked && !tenant.isBlocked;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl items-center px-6 py-16">
+    <AuthShell
+      bullets={[
+        "A Nexora protege o acesso quando o ciclo de cobrança exige atenção.",
+        "As mensagens abaixo resumem o status operacional da assinatura.",
+        "Após regularização, o acesso ao workspace volta ao normal."
+      ]}
+      description="O acesso foi pausado para preservar o estado contratual da sua operação dentro da Nexora."
+      eyebrow="Nexora Billing Control"
+      title={tenant.isBlocked ? "Acesso suspenso pela plataforma." : "A assinatura precisa de ação."}
+    >
       <div className="w-full space-y-6">
         {flash.success ? <FlashMessage message={flash.success} type="success" /> : null}
         <FlashMessage message={accessMessage} type="error" />
@@ -47,7 +57,7 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
           <CardHeader>
             <CardTitle>{tenant.isBlocked ? "Acesso bloqueado" : "Acesso bloqueado por billing"}</CardTitle>
             <CardDescription>
-              A barbearia {tenant.name} está com o status{" "}
+              A operação {tenant.name} está com o status{" "}
               {getBillingStatusLabel(
                 tenant.billingStatus,
                 tenant.subscriptionCurrentPeriodEnd,
@@ -71,17 +81,17 @@ export default async function BillingLockedPage({ searchParams }: BillingLockedP
             {canOpenBilling ? (
               <form action={openBillingPortalAction}>
                 <SubmitButton pendingLabel="Redirecionando para pagamento..." type="submit">
-                  Ir para pagamento
+                  Regularizar cobrança
                 </SubmitButton>
               </form>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Este bloqueio precisa ser liberado por um Super Admin da plataforma.
+                Este bloqueio precisa ser liberado por um administrador da plataforma.
               </p>
             )}
           </CardContent>
         </Card>
       </div>
-    </main>
+    </AuthShell>
   );
 }

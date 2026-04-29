@@ -1,7 +1,10 @@
 import { AppointmentStatus, BillingStatus } from "@prisma/client";
 import { endOfDay, startOfDay } from "date-fns";
+import { ArrowRight, CalendarRange, ChartNoAxesCombined, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { BrandLockup } from "@/components/brand";
+import { MetricCard } from "@/components/metric-card";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -53,64 +56,96 @@ export default async function HomePage() {
   const metrics = await getLandingMetrics();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
-      <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="mb-8 flex items-center justify-between">
+        <BrandLockup subtitle="Scheduling and operations platform" />
+        <Link
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+          href="/login"
+        >
+          Acessar workspace
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div className="space-y-8">
-          <span className="inline-flex rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground">
-            Flow
-          </span>
+          <span className="section-kicker">Nexora Workspace</span>
           <div className="space-y-5">
-            <h1 className="max-w-3xl text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
-              Gerencie seus Agendamentos de forma simples e eficiente.
+            <h1 className="max-w-4xl font-display text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">
+              Operação, agenda e gestão em um SaaS com presença de marca profissional.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              Cadastre seu negocio, publique sua página em segundos e gerencie serviços,
-              horários e agendamentos.
+              A Nexora centraliza agendamentos, equipe, serviços e visibilidade pública em uma experiência
+              limpa, confiável e pronta para crescer com sua operação.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
-              className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,hsl(var(--primary))_0%,hsl(var(--accent))_100%)] px-6 py-3 text-sm font-semibold text-primary-foreground shadow-[0_18px_40px_rgba(37,99,235,0.28)] transition hover:-translate-y-0.5"
               href="/register"
             >
-              Criar minha barbearia
+              Iniciar com a Nexora
             </Link>
             <Link
-              className="inline-flex items-center justify-center rounded-2xl border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-secondary"
+              className="inline-flex items-center justify-center rounded-2xl border border-border bg-card/[0.92] px-6 py-3 text-sm font-semibold text-foreground transition hover:-translate-y-0.5 hover:bg-secondary/[0.7]"
               href="/login"
             >
               Entrar no painel
             </Link>
           </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="surface-muted flex items-start gap-3 px-4 py-4 text-sm text-muted-foreground">
+              <CalendarRange className="mt-0.5 h-4 w-4 text-primary" />
+              Agenda e remarcação com visão operacional do dia.
+            </div>
+            <div className="surface-muted flex items-start gap-3 px-4 py-4 text-sm text-muted-foreground">
+              <ChartNoAxesCombined className="mt-0.5 h-4 w-4 text-primary" />
+              Catálogo, equipe e métricas com leitura clara.
+            </div>
+            <div className="surface-muted flex items-start gap-3 px-4 py-4 text-sm text-muted-foreground">
+              <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
+              Controle de acesso e billing com fluxo de SaaS real.
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-[2rem] border border-border bg-card/90 p-8 shadow-xl shadow-primary/5 backdrop-blur">
+        <div className="surface-panel p-8">
           <div className="space-y-6">
-            <div className="rounded-2xl bg-secondary p-5">
-              <p className="text-sm font-medium text-muted-foreground">Hoje</p>
-              <p className="mt-2 text-3xl font-bold">
-                {metrics.appointmentsToday}{" "}
-                {pluralize(metrics.appointmentsToday, "agendamento", "agendamentos")}
+            <div className="space-y-3">
+              <span className="section-kicker">Snapshot da plataforma</span>
+              <h2 className="font-display text-3xl font-semibold tracking-tight">
+                Uma vitrine profissional para sua operação.
+              </h2>
+              <p className="text-sm leading-7 text-muted-foreground">
+                Landing pública, workspace interno e estrutura multi-tenant alinhados na mesma identidade.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border p-5">
-                <p className="text-sm text-muted-foreground">Barbeiros</p>
-                <p className="mt-2 text-2xl font-bold">
-                  {metrics.activeBarbers} {pluralize(metrics.activeBarbers, "ativo", "ativos")}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border p-5">
-                <p className="text-sm text-muted-foreground">Serviços</p>
-                <p className="mt-2 text-2xl font-bold">
-                  {metrics.publishedServices}{" "}
-                  {pluralize(metrics.publishedServices, "publicado", "publicados")}
-                </p>
-              </div>
+              <MetricCard
+                accent="primary"
+                hint={pluralize(metrics.appointmentsToday, "agendamento confirmado para hoje", "agendamentos mapeados para hoje")}
+                label="Hoje"
+                value={metrics.appointmentsToday}
+              />
+              <MetricCard
+                accent="emerald"
+                hint={`${metrics.activeBarbers} profissionais ativos`}
+                label="Equipe disponível"
+                value={metrics.activeBarbers}
+              />
+              <MetricCard
+                accent="amber"
+                hint={`${metrics.publishedServices} serviços publicados`}
+                label="Catálogo"
+                value={metrics.publishedServices}
+                className="sm:col-span-2"
+              />
             </div>
-            <div className="rounded-2xl border border-dashed border-border p-5">
-              <p className="text-sm text-muted-foreground">
-                Cada negócio ganha uma página própria, otimizada para aparecer no Google e pronta para receber agendamentos — sem obrigar o cliente a criar uma conta.
+            <div className="surface-muted p-5">
+              <p className="text-sm leading-7 text-muted-foreground">
+                Cada cliente Nexora recebe uma presença digital pronta para captar novos agendamentos sem sacrificar clareza operacional no painel administrativo.
               </p>
             </div>
           </div>

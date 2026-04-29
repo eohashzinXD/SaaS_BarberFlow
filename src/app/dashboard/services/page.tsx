@@ -24,8 +24,9 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
   return (
     <div className="space-y-6">
       <SectionHeader
+        description="Estruture seu catálogo com duração, preço e descrição em uma apresentação consistente."
+        eyebrow="Nexora Workspace"
         title="Serviços"
-        description="Gerencie duração, descrição e preço de cada serviço publicado."
         actions={
           <Button asChild>
             <Link href="/dashboard/services/new">Novo serviço</Link>
@@ -66,7 +67,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
       ) : (
         <EmptyState
           title="Nenhum serviço cadastrado"
-          description="Crie o primeiro serviço para ativar o fluxo de agendamento."
+          description="Crie o primeiro serviço para estruturar o catálogo visível no booking e na agenda."
           action={
             <Button asChild>
               <Link href="/dashboard/services/new">Cadastrar serviço</Link>
